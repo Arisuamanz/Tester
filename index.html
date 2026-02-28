@@ -3,269 +3,215 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PornOSexual Wallpaper • Vertical Phone 💕</title>
+  <title>Pornstar Card Battle - Savage Edition 😈</title>
   <style>
-    :root {
-      --pink: #ff00aa;
-      --hotpink: #ff1493;
-      --deeppink: #ff0066;
-    }
-
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body, html {
-      height: 100%;
-      font-family: 'Impact', 'Arial Black', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      overflow: hidden;
-    }
-
-    /* SKRIN PILIH FILE */
-    #upload-screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #1a001a, #330022);
-      z-index: 100;
-    }
-
-    .upload-box {
-      width: 580px;
-      padding: 60px 40px;
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
       text-align: center;
-      border: 4px dashed var(--pink);
-      border-radius: 30px;
-      background: rgba(0,0,0,0.7);
     }
-
-    .upload-box:hover {
-      border-color: var(--hotpink);
-      box-shadow: 0 0 60px rgba(255,0,170,0.5);
+    h1 { color: #ff3366; }
+    .container { max-width: 1200px; margin: auto; }
+    .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px 0; }
+    .card {
+      background: #222;
+      border: 2px solid #444;
+      border-radius: 12px;
+      width: 220px;
+      padding: 15px;
+      box-shadow: 0 0 15px rgba(255,51,102,0.3);
+      transition: all 0.3s;
     }
-
-    .upload-box h1 {
-      font-size: 3.5rem;
-      color: var(--pink);
-      text-shadow: 0 0 30px var(--pink);
-      margin-bottom: 20px;
-    }
-
-    .btn-upload {
-      display: inline-block;
-      padding: 20px 55px;
-      font-size: 1.7rem;
-      background: var(--deeppink);
-      color: white;
+    .card:hover { transform: scale(1.05); border-color: #ff3366; }
+    .card h3 { margin: 0 0 10px; color: #ff99cc; }
+    .stats { font-size: 0.9em; }
+    .stat { margin: 5px 0; }
+    button {
+      background: #ff3366;
       border: none;
-      border-radius: 9999px;
+      color: white;
+      padding: 10px 20px;
+      margin: 8px;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 0 40px var(--deeppink);
+      font-size: 1em;
     }
-
-    .btn-upload:hover {
-      background: var(--hotpink);
-      transform: scale(1.08);
-    }
-
-    #file-input { display: none; }
-
-    /* PREVIEW FULL VERTICAL PHONE – BACKGROUND 100% TERANG */
-    #preview-screen {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .vertical-frame {
-      width: 100%;
-      height: 100vh;
-      max-width: 520px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 100px rgba(255,0,170,0.8);
-      background: #000;
-    }
-
-    #bg-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      /* 100% TERANG – TIADA FILTER */
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, 
-        rgba(0,0,0,0.06) 0%, 
-        rgba(0,0,0,0.14) 50%, 
-        rgba(0,0,0,0.32) 100%);
-      z-index: 2;
-    }
-
-    .text-container {
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      padding: 38px 28px 45px;
-    }
-
-    /* KIRI – lebih pornosexual dengan 💕 */
-    .left-block {
-      position: absolute;
-      top: 7%;
-      left: 6%;
-      width: 42%;
-      color: #ffffff;
-      font-size: 13.5px;
-      line-height: 1.36;
-      font-weight: 900;
-      text-shadow: 2px 2px 0 #9900cc, -2px -2px 0 #9900cc, 3px 3px 6px #000;
-    }
-
-    /* KANAN – lebih banyak "porn so much 💕" */
-    .right-block {
-      position: absolute;
-      top: 7%;
-      right: 6%;
-      width: 46%;
-      color: #ffff00;
-      font-size: 13.8px;
-      line-height: 1.42;
-      font-weight: 900;
-      text-align: right;
-      text-shadow: 2px 2px 0 #cc0000, -2px -2px 0 #cc0000, 3px 3px 6px #000;
-    }
-
-    /* BOTTOM BESAR – lebih gila dengan hearts */
-    .bottom-big {
-      position: absolute;
-      bottom: 5%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 52px;
-      font-weight: 900;
-      color: #ff1493;
-      text-transform: uppercase;
-      letter-spacing: -3px;
-      line-height: 0.78;
-      text-align: center;
-      text-shadow: 
-        0 0 25px #ff00aa,
-        0 0 45px #ff1493,
-        7px 7px 0 #000,
-        -7px -7px 0 #000,
-        12px 12px 0 #000;
-      animation: glow 2.2s infinite alternate;
-    }
-
-    @keyframes glow {
-      from { text-shadow: 0 0 25px #ff00aa, 7px 7px 0 #000; }
-      to   { text-shadow: 0 0 50px #ff1493, 9px 9px 0 #000; }
-    }
+    button:hover { background: #ff6699; }
+    button:disabled { background: #444; cursor: not-allowed; }
+    #status { font-size: 1.3em; margin: 20px; color: #ffcc00; }
+    #log { background: #000; padding: 15px; border-radius: 10px; max-height: 300px; overflow-y: auto; text-align: left; font-family: monospace; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>😈 Pornstar Card Battle 😈</h1>
+    <p>Savage mode: Kau vs AI. Pilih kad & stat, battle sampai habis 5 round!</p>
 
-  <!-- SKRIN PILIH FILE -->
-  <div id="upload-screen">
-    <div class="upload-box">
-      <h1>PORN IS MY LIFE 💕</h1>
-      <p style="font-size:1.45rem; margin:15px 0 25px;">Pilih gambar background awak</p>
-      <label for="file-input" class="btn-upload">📸 PILIH GAMBAR</label>
-      <input type="file" id="file-input" accept="image/*" />
-      <p style="margin-top:25px; opacity:0.8; font-size:1.1rem;">Atau drag & drop gambar sini</p>
+    <div id="status">Tekan "Start Game" untuk mula bro 🔥</div>
+
+    <button id="startBtn" onclick="startGame()">Start Game / Rematch</button>
+
+    <h3>Kad Kau (Pilih satu kad & satu stat setiap round)</h3>
+    <div id="playerCards" class="cards"></div>
+
+    <div id="choices" style="display:none; margin: 20px;">
+      <h3>Pilih Stat untuk Battle Round Ini:</h3>
+      <button onclick="playRound('face')">Face</button>
+      <button onclick="playRound('boobs')">Boobs</button>
+      <button onclick="playRound('ass')">Ass 🍑</button>
+      <button onclick="playRound('pussy')">Pussy 💦</button>
+      <button onclick="playRound('avg')">Overall Avg</button>
     </div>
-  </div>
 
-  <!-- PREVIEW FULL VERTICAL PHONE – LEBIH PORNosexual 💕 -->
-  <div id="preview-screen">
-    <div class="vertical-frame">
-      <div id="bg-image"></div>
-      <div class="overlay"></div>
+    <h3>Kad AI (Hidden sampai battle)</h3>
+    <div id="aiCards" class="cards"></div>
 
-      <div class="text-container">
-        <!-- KIRI -->
-        <div class="left-block">
-          💕 I LOVE PORN SO MUCH 💕<br>
-          I LOVE PORN AND I ALWAYS HAVE.<br>
-          THROUGH GOOD AND BAD TIMES.<br>
-          THROUGH EVERY RELATIONSHIP.<br>
-          PORN HAS ALWAYS BEEN THERE.<br>
-          PORN GIVES ME WHAT I NEED.<br>
-          PORN KEEPS ME HAPPY.<br>
-          I LOVE PORN SO MUCH 💕<br>
-          I LOVE PORN SO MUCH 💕<br>
-          I LOVE PORN SO MUCH 💕
-        </div>
+    <h3>Battle Log</h3>
+    <div id="log"></div>
 
-        <!-- KANAN – lebih banyak "porn so much 💕" -->
-        <div class="right-block">
-          I LOVE PORN SO MUCH 💕<br>
-          PORN IS SO AMAZING 💕<br>
-          I LOVE PORN SO MUCH 💕<br>
-          PORN IS EVERYTHING 💕<br>
-          I LOVE PORN SO MUCH 💕<br>
-          PORN MAKES ME HAPPY 💕<br>
-          I LOVE PORN SO MUCH 💕<br>
-          PORN IS PERFECT 💕<br>
-          I LOVE PORN SO MUCH 💕<br>
-          💕 PORN IS MY LIFE 💕
-        </div>
-
-        <!-- BOTTOM BESAR – lebih intense -->
-        <div class="bottom-big">
-          I FUCKING<br>LOVE PORN<br>💕💕💕
-        </div>
-      </div>
-    </div>
+    <p id="score">Score: Kau 0 - AI 0 | Round 0/5</p>
   </div>
 
   <script>
-    const fileInput = document.getElementById('file-input');
-    const uploadScreen = document.getElementById('upload-screen');
-    const previewScreen = document.getElementById('preview-screen');
-    const bgImage = document.getElementById('bg-image');
+    const deck = [
+      {name: "Mia Malkova", face:9, boobs:8, ass:10, pussy:9, avg:9.0},
+      {name: "Alexis Texas", face:8, boobs:7, ass:10, pussy:9, avg:8.5},
+      {name: "Abella Danger", face:9, boobs:8, ass:9, pussy:10, avg:9.0},
+      {name: "Lana Rhoades", face:10, boobs:9, ass:8, pussy:9, avg:9.0},
+      {name: "Angela White", face:9, boobs:10, ass:8, pussy:9, avg:9.0},
+      {name: "Riley Reid", face:9, boobs:7, ass:7, pussy:10, avg:8.3},
+      {name: "Adriana Chechik", face:8, boobs:7, ass:8, pussy:10, avg:8.3},
+      {name: "Tori Black", face:10, boobs:8, ass:7, pussy:9, avg:8.5},
+      {name: "Lisa Ann", face:9, boobs:9, ass:8, pussy:8, avg:8.5},
+      {name: "Jessa Rhodes", face:9, boobs:8, ass:7, pussy:8, avg:8.0},
+      {name: "Valentina Nappi", face:9, boobs:8, ass:8, pussy:9, avg:8.5},
+      {name: "Luna Star", face:8, boobs:8, ass:9, pussy:9, avg:8.5},
+      {name: "Savannah Bond", face:8, boobs:9, ass:9, pussy:8, avg:8.5},
+      {name: "Gia Derza", face:8, boobs:8, ass:10, pussy:8, avg:8.5},
+      {name: "Ivy Lebelle", face:8, boobs:9, ass:9, pussy:8, avg:8.5},
+      {name: "AJ Applegate", face:9, boobs:8, ass:9, pussy:8, avg:8.5},
+      {name: "Mia Khalifa", face:9, boobs:9, ass:7, pussy:7, avg:8.0},
+      {name: "ArisuAmanz Fantasy", face:7, boobs:6, ass:8, pussy:7, avg:7.0} // Special untuk kau bro 😏
+    ];
 
-    const dropArea = document.querySelector('.upload-box');
-    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#ff1493'; });
-    dropArea.addEventListener('dragleave', () => dropArea.style.borderColor = 'var(--pink)');
-    dropArea.addEventListener('drop', e => {
-      e.preventDefault();
-      dropArea.style.borderColor = 'var(--pink)';
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) handleFile(file);
-    });
+    let playerHand = [];
+    let aiHand = [];
+    let currentRound = 0;
+    let playerScore = 0;
+    let aiScore = 0;
+    let selectedCard = null;
 
-    fileInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) handleFile(file);
-    });
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+    const scoreEl = document.getElementById('score');
+    const playerDiv = document.getElementById('playerCards');
+    const aiDiv = document.getElementById('aiCards');
+    const choicesDiv = document.getElementById('choices');
+    const startBtn = document.getElementById('startBtn');
 
-    function handleFile(file) {
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        bgImage.style.backgroundImage = `url('${ev.target.result}')`;
-        uploadScreen.style.display = 'none';
-        previewScreen.style.display = 'flex';
-      };
-      reader.readAsDataURL(file);
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.key === "Escape" && previewScreen.style.display === 'flex') {
-        uploadScreen.style.display = 'flex';
-        previewScreen.style.display = 'none';
+    function startGame() {
+      log.innerHTML = '';
+      playerScore = 0; aiScore = 0; currentRound = 0;
+      selectedCard = null;
+
+      const shuffled = shuffle([...deck]);
+      playerHand = shuffled.slice(0,5);
+      aiHand = shuffled.slice(5,10);
+
+      renderCards();
+      status.textContent = "Pilih satu kad kau, lepas tu pilih stat untuk battle!";
+      choicesDiv.style.display = 'block';
+      updateScore();
+      log.innerHTML += '<p>Game baru bermula! Round 1/5 🔥</p>';
+    }
+
+    function renderCards() {
+      playerDiv.innerHTML = '';
+      playerHand.forEach((card, i) => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <h3>${card.name}</h3>
+          <div class="stats">
+            <div class="stat">Face: ${card.face}</div>
+            <div class="stat">Boobs: ${card.boobs}</div>
+            <div class="stat">Ass: ${card.ass}</div>
+            <div class="stat">Pussy: ${card.pussy}</div>
+            <div class="stat"><b>Avg: ${card.avg}</b></div>
+          </div>
+          <button onclick="selectPlayerCard(${i})">Pilih Kad Ini</button>
+        `;
+        playerDiv.appendChild(div);
+      });
+
+      aiDiv.innerHTML = '';
+      aiHand.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<h3>??? (Hidden)</h3><p>AI punya kad rahsia 🤫</p>`;
+        aiDiv.appendChild(div);
+      });
+    }
+
+    function selectPlayerCard(index) {
+      selectedCard = playerHand[index];
+      status.textContent = `Kau pilih ${selectedCard.name}. Sekarang pilih stat untuk battle!`;
+      log.innerHTML += `<p>Kau pilih kad: <b>${selectedCard.name}</b></p>`;
+    }
+
+    function playRound(stat) {
+      if (!selectedCard) {
+        alert("Pilih kad dulu sial!");
+        return;
       }
-    });
+      if (currentRound >= 5) return;
+
+      currentRound++;
+      const aiCard = aiHand[Math.floor(Math.random() * aiHand.length)];
+      const playerVal = selectedCard[stat];
+      const aiVal = aiCard[stat];
+
+      let result = '';
+      if (playerVal > aiVal) {
+        playerScore++;
+        result = `Kau menang round ni! ${playerVal} > ${aiVal} 🔥`;
+      } else if (playerVal < aiVal) {
+        aiScore++;
+        result = `AI menang sial... ${playerVal} < ${aiVal} 😤`;
+      } else {
+        result = `Draw! Sama ${playerVal} 🤝`;
+      }
+
+      log.innerHTML += `<p><b>Round ${currentRound} - ${stat.toUpperCase()} battle:</b><br>
+        Kau: ${selectedCard.name} (${playerVal})<br>
+        AI: ${aiCard.name} (${aiVal})<br>
+        ${result}</p>`;
+
+      selectedCard = null;
+      status.textContent = `Round ${currentRound}/5 selesai. Pilih kad baru kalau nak sambung!`;
+      updateScore();
+
+      if (currentRound >= 5) {
+        let winner = playerScore > aiScore ? "Kau juara savage! 😈💦" :
+                     aiScore > playerScore ? "AI menang... kesian single lagi 😂" : "Draw! Rematch la bro 🤣";
+        status.textContent = `GAME OVER - ${winner}`;
+        log.innerHTML += `<h2 style="color:#ff3366;">${winner}</h2>`;
+      }
+    }
+
+    function updateScore() {
+      scoreEl.textContent = `Score: Kau ${playerScore} - AI ${aiScore} | Round ${currentRound}/5`;
+    }
+
+    // Auto start first time
+    // startGame();
   </script>
 </body>
 </html>
