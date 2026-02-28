@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PornOSexual Wallpaper Maker • 9:21 Vertical</title>
+  <title>PornOSexual Wallpaper • Vertical Phone</title>
   <style>
     :root {
       --pink: #ff00aa;
@@ -14,13 +14,13 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body, html {
       height: 100%;
-      font-family: 'Arial Black', Impact, sans-serif;
+      font-family: 'Impact', 'Arial Black', sans-serif;
       background: #0a0a0a;
       color: #fff;
       overflow: hidden;
     }
 
-    /* SKRIN UPLOAD – TEMPAT PILIH FILE DULU */
+    /* SKRIN PILIH FILE */
     #upload-screen {
       position: fixed;
       inset: 0;
@@ -32,55 +32,47 @@
     }
 
     .upload-box {
-      width: 620px;
+      width: 580px;
       padding: 60px 40px;
       text-align: center;
       border: 4px dashed var(--pink);
       border-radius: 30px;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       transition: all 0.4s;
     }
 
     .upload-box:hover {
       border-color: var(--hotpink);
-      transform: scale(1.03);
-      box-shadow: 0 0 60px rgba(255,0,170,0.6);
+      box-shadow: 0 0 60px rgba(255,0,170,0.5);
     }
 
     .upload-box h1 {
-      font-size: 3.8rem;
+      font-size: 3.5rem;
       color: var(--pink);
       text-shadow: 0 0 30px var(--pink);
       margin-bottom: 20px;
     }
 
-    .upload-box p {
-      font-size: 1.5rem;
-      margin-bottom: 30px;
-      opacity: 0.9;
-    }
-
     .btn-upload {
       display: inline-block;
-      padding: 22px 60px;
-      font-size: 1.8rem;
+      padding: 20px 55px;
+      font-size: 1.7rem;
       background: var(--deeppink);
       color: white;
       border: none;
       border-radius: 9999px;
       cursor: pointer;
       box-shadow: 0 0 40px var(--deeppink);
-      transition: all 0.3s;
     }
 
     .btn-upload:hover {
       background: var(--hotpink);
-      transform: scale(1.1);
+      transform: scale(1.08);
     }
 
     #file-input { display: none; }
 
-    /* SKRIN PREVIEW – BINGKAI 9:21 VERTICAL (TALL) */
+    /* PREVIEW FULL VERTICAL PHONE (100% screen tall) */
     #preview-screen {
       display: none;
       position: fixed;
@@ -88,125 +80,99 @@
       background: #000;
       align-items: center;
       justify-content: center;
-      padding: 20px;
     }
 
-    .frame {
-      width: auto;
-      height: 94vh;
-      max-height: 100vh;
-      aspect-ratio: 9 / 21;        /* ← INI YANG BETUL: 9:21 VERTICAL TALL */
-      max-width: 520px;            /* supaya nampak cantik di desktop */
-      margin: 0 auto;
+    .vertical-frame {
+      width: 100%;
+      height: 100vh;
+      max-width: 520px;               /* lebar macam telefon */
       position: relative;
-      border: 14px solid #111;
-      border-radius: 22px;
       overflow: hidden;
-      box-shadow: 0 0 90px rgba(255,0,170,0.85);
+      box-shadow: 0 0 100px rgba(255,0,170,0.8);
       background: #000;
     }
 
-    .frame-bg {
+    #bg-image {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       background-size: cover;
       background-position: center;
-      filter: brightness(0.62) contrast(1.28) saturate(1.5);
+      filter: brightness(0.65) contrast(1.18) saturate(1.35);
     }
 
     .overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.88) 100%);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.82) 62%, rgba(0,0,0,0.95) 100%);
       z-index: 2;
     }
 
-    .text-layer {
+    .text-container {
       position: absolute;
       inset: 0;
       z-index: 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 6vh 8vw;
+      padding: 38px 28px 45px;
     }
 
-    .main-title {
-      font-size: clamp(5.5rem, 18vw, 26rem);
-      font-weight: 900;
-      color: var(--pink);
-      line-height: 0.78;
-      text-shadow: 
-        0 0 20px var(--pink),
-        0 0 40px var(--pink),
-        0 0 70px var(--hotpink),
-        7px 7px 0 #000,
-       -7px -7px 0 #000;
-      animation: glow 2.6s infinite alternate;
-    }
-
-    .subtitle {
-      font-size: clamp(2.6rem, 9vw, 11rem);
-      color: #ff69b4;
-      font-weight: 900;
-      margin: 12px 0 28px;
-      text-shadow: 5px 5px 0 #000;
-    }
-
-    .repeats {
-      font-size: clamp(1.55rem, 5.5vw, 5.2rem);
-      color: var(--hotpink);
-      line-height: 1.48;
-      text-shadow: 4px 4px 0 #000;
-      max-width: 100%;
-    }
-
-    .bottom-shout {
+    /* TEKS KIRI – macam gambar asal */
+    .left-block {
       position: absolute;
-      bottom: 8%;
+      top: 8%;
+      left: 6%;
+      width: 42%;
+      color: #ffffff;
+      font-size: 13.8px;
+      line-height: 1.38;
+      font-weight: 900;
+      text-shadow: 
+        2px 2px 0 #9900cc,
+        -2px -2px 0 #9900cc,
+        3px 3px 6px #000;
+    }
+
+    /* TEKS KANAN – macam gambar asal */
+    .right-block {
+      position: absolute;
+      top: 8%;
+      right: 6%;
+      width: 46%;
+      color: #ffff00;
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 900;
+      text-align: right;
+      text-shadow: 
+        2px 2px 0 #cc0000,
+        -2px -2px 0 #cc0000,
+        3px 3px 6px #000;
+    }
+
+    /* BOTTOM BESAR – graffiti style macam gambar asal */
+    .bottom-big {
+      position: absolute;
+      bottom: 6%;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(4rem, 13vw, 16rem);
-      color: var(--deeppink);
+      font-size: 48px;
       font-weight: 900;
+      color: #ff1493;
       text-transform: uppercase;
-      letter-spacing: 6px;
-      text-shadow: 0 0 50px #000, 10px 10px 0 #000;
-      animation: pulse 1.5s infinite;
-    }
-
-    .change-btn {
-      position: absolute;
-      top: 25px;
-      right: 25px;
-      padding: 16px 36px;
-      background: rgba(0,0,0,0.75);
-      color: white;
-      border: 3px solid var(--pink);
-      border-radius: 50px;
-      font-size: 1.35rem;
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.3s;
-    }
-
-    .change-btn:hover {
-      background: var(--pink);
-      color: #000;
+      letter-spacing: -3px;
+      line-height: 0.82;
+      text-align: center;
+      text-shadow: 
+        0 0 20px #ff00aa,
+        6px 6px 0 #000,
+        -6px -6px 0 #000,
+        10px 10px 0 #000;
+      animation: glow 2.4s infinite alternate;
     }
 
     @keyframes glow {
-      from { text-shadow: 0 0 20px var(--pink), 0 0 40px var(--pink), 0 0 70px var(--hotpink); }
-      to   { text-shadow: 0 0 30px var(--pink), 0 0 60px var(--hotpink), 0 0 100px #ff0066; }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: translateX(-50%) scale(1); }
-      50%      { transform: translateX(-50%) scale(1.07); }
+      from { text-shadow: 0 0 15px #ff00aa, 6px 6px 0 #000; }
+      to   { text-shadow: 0 0 35px #ff1493, 8px 8px 0 #000; }
     }
   </style>
 </head>
@@ -216,35 +182,51 @@
   <div id="upload-screen">
     <div class="upload-box">
       <h1>PORN IS MY LIFE</h1>
-      <p>Pilih gambar kegemaran awak dulu...</p>
-      <label for="file-input" class="btn-upload">📸 PILIH GAMBAR PORNO</label>
+      <p style="font-size:1.45rem; margin:15px 0 25px;">Pilih gambar background awak</p>
+      <label for="file-input" class="btn-upload">📸 PILIH GAMBAR</label>
       <input type="file" id="file-input" accept="image/*" />
-      <p style="margin-top:30px; font-size:1.1rem; opacity:0.7;">Atau drag & drop gambar sini</p>
+      <p style="margin-top:25px; opacity:0.8; font-size:1.1rem;">Atau drag & drop gambar sini</p>
     </div>
   </div>
 
-  <!-- SKRIN PREVIEW 9:21 VERTICAL -->
+  <!-- PREVIEW FULL VERTICAL PHONE -->
   <div id="preview-screen">
-    <div class="frame">
-      <div id="frame-bg" class="frame-bg"></div>
+    <div class="vertical-frame">
+      <div id="bg-image"></div>
       <div class="overlay"></div>
 
-      <div class="text-layer">
-        <div class="main-title">PORN</div>
-        <div class="subtitle">is the love of my life</div>
-        
-        <div class="repeats">
-          I FUCKING LOVE PORN<br>
-          PORN KEEPS ME HAPPY<br>
-          PORN IS EVERYTHING<br>
-          I LOVE PORN SO MUCH<br>
-          PORN IS PERFECT
+      <div class="text-container">
+        <!-- KIRI – tepat macam gambar awak -->
+        <div class="left-block">
+          I LOVE PORN AND I ALWAYS HAVE.<br>
+          THROUGH GOOD AND BAD TIMES.<br>
+          THROUGH EVERY RELATIONSHIP.<br>
+          PORN HAS ALWAYS BEEN THERE.<br>
+          PORN GIVES ME WHAT I NEED.<br>
+          PORN KEEPS ME HAPPY.<br>
+          I LOVE PORN SO MUCH.<br>
+          I LOVE PORN SO MUCH.<br>
+          I LOVE PORN SO MUCH.
         </div>
 
-        <div class="bottom-shout">I FUCKING LOVE PORN</div>
-      </div>
+        <!-- KANAN – tepat macam gambar awak -->
+        <div class="right-block">
+          I LOVE PORN SO MUCH.<br>
+          PORN IS SO AMAZING.<br>
+          I LOVE PORN SO MUCH.<br>
+          PORN IS EVERYTHING.<br>
+          I LOVE PORN SO MUCH.<br>
+          PORN MAKES ME HAPPY.<br>
+          I LOVE PORN SO MUCH.<br>
+          PORN IS PERFECT.<br>
+          I LOVE PORN SO MUCH.
+        </div>
 
-      <button onclick="backToUpload()" class="change-btn">TUKAR GAMBAR</button>
+        <!-- BOTTOM BESAR – graffiti tepat macam gambar awak -->
+        <div class="bottom-big">
+          I FUCKING<br>LOVE PORN
+        </div>
+      </div>
     </div>
   </div>
 
@@ -252,26 +234,15 @@
     const fileInput = document.getElementById('file-input');
     const uploadScreen = document.getElementById('upload-screen');
     const previewScreen = document.getElementById('preview-screen');
-    const frameBg = document.getElementById('frame-bg');
+    const bgImage = document.getElementById('bg-image');
 
     // Drag & Drop
     const dropArea = document.querySelector('.upload-box');
-    
-    dropArea.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropArea.style.borderColor = '#ff1493';
-      dropArea.style.background = 'rgba(255,0,170,0.1)';
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-      dropArea.style.borderColor = '#ff00aa';
-      dropArea.style.background = 'rgba(0,0,0,0.6)';
-    });
-
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#ff1493'; });
+    dropArea.addEventListener('dragleave', () => dropArea.style.borderColor = 'var(--pink)');
     dropArea.addEventListener('drop', e => {
       e.preventDefault();
-      dropArea.style.borderColor = '#ff00aa';
-      dropArea.style.background = 'rgba(0,0,0,0.6)';
+      dropArea.style.borderColor = 'var(--pink)';
       const file = e.dataTransfer.files[0];
       if (file && file.type.startsWith('image/')) handleFile(file);
     });
@@ -284,22 +255,18 @@
     function handleFile(file) {
       const reader = new FileReader();
       reader.onload = function(ev) {
-        frameBg.style.backgroundImage = `url('${ev.target.result}')`;
+        bgImage.style.backgroundImage = `url('${ev.target.result}')`;
         uploadScreen.style.display = 'none';
         previewScreen.style.display = 'flex';
       };
       reader.readAsDataURL(file);
     }
 
-    function backToUpload() {
-      uploadScreen.style.display = 'flex';
-      previewScreen.style.display = 'none';
-      fileInput.value = '';
-    }
-
+    // ESC = balik ke upload (tak ada button halang gambar)
     document.addEventListener('keydown', e => {
       if (e.key === "Escape" && previewScreen.style.display === 'flex') {
-        backToUpload();
+        uploadScreen.style.display = 'flex';
+        previewScreen.style.display = 'none';
       }
     });
   </script>
