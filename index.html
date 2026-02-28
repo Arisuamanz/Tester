@@ -3,177 +3,305 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PORN IS MY LIFE</title>
+  <title>PornOSexual Wallpaper Maker • 9:21 Vertical</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --pink: #ff00aa;
+      --hotpink: #ff1493;
+      --deeppink: #ff0066;
     }
 
+    * { margin:0; padding:0; box-sizing:border-box; }
     body, html {
       height: 100%;
-      font-family: 'Arial Black', Arial, sans-serif;
-      background: #000;
+      font-family: 'Arial Black', Impact, sans-serif;
+      background: #0a0a0a;
       color: #fff;
       overflow: hidden;
     }
 
-    .container {
-      width: 100%;
-      height: 100vh;
-      aspect-ratio: 21 / 9;
-      max-width: 100vw;
+    /* SKRIN UPLOAD – TEMPAT PILIH FILE DULU */
+    #upload-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a001a, #330022);
+      z-index: 100;
+    }
+
+    .upload-box {
+      width: 620px;
+      padding: 60px 40px;
+      text-align: center;
+      border: 4px dashed var(--pink);
+      border-radius: 30px;
+      background: rgba(0,0,0,0.6);
+      transition: all 0.4s;
+    }
+
+    .upload-box:hover {
+      border-color: var(--hotpink);
+      transform: scale(1.03);
+      box-shadow: 0 0 60px rgba(255,0,170,0.6);
+    }
+
+    .upload-box h1 {
+      font-size: 3.8rem;
+      color: var(--pink);
+      text-shadow: 0 0 30px var(--pink);
+      margin-bottom: 20px;
+    }
+
+    .upload-box p {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    .btn-upload {
+      display: inline-block;
+      padding: 22px 60px;
+      font-size: 1.8rem;
+      background: var(--deeppink);
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 0 40px var(--deeppink);
+      transition: all 0.3s;
+    }
+
+    .btn-upload:hover {
+      background: var(--hotpink);
+      transform: scale(1.1);
+    }
+
+    #file-input { display: none; }
+
+    /* SKRIN PREVIEW – BINGKAI 9:21 VERTICAL (TALL) */
+    #preview-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .frame {
+      width: auto;
+      height: 94vh;
+      max-height: 100vh;
+      aspect-ratio: 9 / 21;        /* ← INI YANG BETUL: 9:21 VERTICAL TALL */
+      max-width: 520px;            /* supaya nampak cantik di desktop */
       margin: 0 auto;
       position: relative;
-      background: #111;
+      border: 14px solid #111;
+      border-radius: 22px;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 0 90px rgba(255,0,170,0.85);
+      background: #000;
     }
 
-    /* Placeholder gambar di AWAL (atas sekali) */
-    .image-placeholder {
-      width: 100%;
-      height: 45%;                  /* \~ separuh atas – boleh adjust % ni */
-      background: #222 url('https://via.placeholder.com/1920x1080/000/fff?text=LET+AK+GAMBAR+PORN+DI+SINI') 
-                  center/cover no-repeat;
-      position: relative;
-      z-index: 1;
-    }
-
-    .image-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Background utama (kalau nak layer bawah teks) */
-    .bg-layer {
+    .frame-bg {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      filter: brightness(0.5) contrast(1.2) saturate(1.5);
-      z-index: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.62) contrast(1.28) saturate(1.5);
     }
 
     .overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 60%, #000 100%);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.88) 100%);
       z-index: 2;
     }
 
-    .content {
-      flex: 1;
-      position: relative;
+    .text-layer {
+      position: absolute;
+      inset: 0;
       z-index: 3;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 4vw 6vw;
       text-align: center;
-      text-shadow: 
-        0 0 12px #ff00aa,
-        0 0 24px #ff00aa,
-        0 0 48px #ff1493,
-        4px 4px 0 #000,
-       -4px -4px 0 #000;
+      padding: 6vh 8vw;
     }
 
     .main-title {
-      font-size: clamp(6rem, 14vw, 20rem);
+      font-size: clamp(5.5rem, 18vw, 26rem);
       font-weight: 900;
-      color: #ff00aa;
-      line-height: 0.85;
-      letter-spacing: -0.03em;
-      margin-bottom: 0.15em;
-      animation: glow 2.8s ease-in-out infinite alternate;
+      color: var(--pink);
+      line-height: 0.78;
+      text-shadow: 
+        0 0 20px var(--pink),
+        0 0 40px var(--pink),
+        0 0 70px var(--hotpink),
+        7px 7px 0 #000,
+       -7px -7px 0 #000;
+      animation: glow 2.6s infinite alternate;
     }
 
     .subtitle {
-      font-size: clamp(2.8rem, 6vw, 9rem);
+      font-size: clamp(2.6rem, 9vw, 11rem);
       color: #ff69b4;
-      font-weight: bold;
-      margin: 0.3em 0 0.6em;
+      font-weight: 900;
+      margin: 12px 0 28px;
+      text-shadow: 5px 5px 0 #000;
     }
 
-    .small-repeats {
-      font-size: clamp(1.6rem, 4vw, 5rem);
-      color: #ff1493;
-      opacity: 0.92;
-      line-height: 1.5;
-      max-width: 95%;
+    .repeats {
+      font-size: clamp(1.55rem, 5.5vw, 5.2rem);
+      color: var(--hotpink);
+      line-height: 1.48;
+      text-shadow: 4px 4px 0 #000;
+      max-width: 100%;
     }
 
     .bottom-shout {
       position: absolute;
-      bottom: 6%;
+      bottom: 8%;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(4rem, 9vw, 14rem);
-      color: #ff0066;
+      font-size: clamp(4rem, 13vw, 16rem);
+      color: var(--deeppink);
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      animation: pulse 1.6s infinite;
+      letter-spacing: 6px;
+      text-shadow: 0 0 50px #000, 10px 10px 0 #000;
+      animation: pulse 1.5s infinite;
+    }
+
+    .change-btn {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      padding: 16px 36px;
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 3px solid var(--pink);
+      border-radius: 50px;
+      font-size: 1.35rem;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s;
+    }
+
+    .change-btn:hover {
+      background: var(--pink);
+      color: #000;
     }
 
     @keyframes glow {
-      from { text-shadow: 0 0 12px #ff00aa, 0 0 24px #ff00aa, 0 0 48px #ff1493; }
-      to   { text-shadow: 0 0 24px #ff00aa, 0 0 48px #ff1493, 0 0 90px #ff0066; }
+      from { text-shadow: 0 0 20px var(--pink), 0 0 40px var(--pink), 0 0 70px var(--hotpink); }
+      to   { text-shadow: 0 0 30px var(--pink), 0 0 60px var(--hotpink), 0 0 100px #ff0066; }
     }
 
     @keyframes pulse {
       0%, 100% { transform: translateX(-50%) scale(1); }
-      50%      { transform: translateX(-50%) scale(1.04); }
-    }
-
-    @media (min-aspect-ratio: 21/9) {
-      .container { height: auto; width: 100vw; }
+      50%      { transform: translateX(-50%) scale(1.07); }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- GAMBAR DI AWAL – letak gambar porn/hot di sini -->
-  <div class="image-placeholder">
-    <!-- Contoh: ganti src dengan link gambar sebenar -->
-    <!-- <img src="https://i.imgur.com/YOUR_HOT_IMAGE.jpg" alt="Porn Image"> -->
-    <!-- Atau biarkan background url di CSS atas -->
-  </div>
-
-  <!-- Background layer bawah (optional) -->
-  <img 
-    class="bg-layer" 
-    src="https://images.unsplash.com/photo-1519741497674-8b6941a0d9e3?auto=format&fit=crop&q=90&w=2400" 
-    alt="bg"
-  />
-
-  <div class="overlay"></div>
-
-  <div class="content">
-    <div class="main-title">PORN</div>
-    <div class="subtitle">is the love of my life</div>
-
-    <div class="small-repeats">
-      I FUCKING LOVE PORN<br>
-      PORN KEEPS ME HAPPY<br>
-      PORN IS EVERYTHING<br>
-      I LOVE PORN SO MUCH<br>
-      PORN IS PERFECT<br>
-      I LOVE PORN SO MUCH
+  <!-- SKRIN PILIH FILE -->
+  <div id="upload-screen">
+    <div class="upload-box">
+      <h1>PORN IS MY LIFE</h1>
+      <p>Pilih gambar kegemaran awak dulu...</p>
+      <label for="file-input" class="btn-upload">📸 PILIH GAMBAR PORNO</label>
+      <input type="file" id="file-input" accept="image/*" />
+      <p style="margin-top:30px; font-size:1.1rem; opacity:0.7;">Atau drag & drop gambar sini</p>
     </div>
-
-    <div class="bottom-shout">I FUCKING LOVE PORN</div>
   </div>
 
-</div>
+  <!-- SKRIN PREVIEW 9:21 VERTICAL -->
+  <div id="preview-screen">
+    <div class="frame">
+      <div id="frame-bg" class="frame-bg"></div>
+      <div class="overlay"></div>
 
+      <div class="text-layer">
+        <div class="main-title">PORN</div>
+        <div class="subtitle">is the love of my life</div>
+        
+        <div class="repeats">
+          I FUCKING LOVE PORN<br>
+          PORN KEEPS ME HAPPY<br>
+          PORN IS EVERYTHING<br>
+          I LOVE PORN SO MUCH<br>
+          PORN IS PERFECT
+        </div>
+
+        <div class="bottom-shout">I FUCKING LOVE PORN</div>
+      </div>
+
+      <button onclick="backToUpload()" class="change-btn">TUKAR GAMBAR</button>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const uploadScreen = document.getElementById('upload-screen');
+    const previewScreen = document.getElementById('preview-screen');
+    const frameBg = document.getElementById('frame-bg');
+
+    // Drag & Drop
+    const dropArea = document.querySelector('.upload-box');
+    
+    dropArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropArea.style.borderColor = '#ff1493';
+      dropArea.style.background = 'rgba(255,0,170,0.1)';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.borderColor = '#ff00aa';
+      dropArea.style.background = 'rgba(0,0,0,0.6)';
+    });
+
+    dropArea.addEventListener('drop', e => {
+      e.preventDefault();
+      dropArea.style.borderColor = '#ff00aa';
+      dropArea.style.background = 'rgba(0,0,0,0.6)';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        frameBg.style.backgroundImage = `url('${ev.target.result}')`;
+        uploadScreen.style.display = 'none';
+        previewScreen.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function backToUpload() {
+      uploadScreen.style.display = 'flex';
+      previewScreen.style.display = 'none';
+      fileInput.value = '';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === "Escape" && previewScreen.style.display === 'flex') {
+        backToUpload();
+      }
+    });
+  </script>
 </body>
 </html>
