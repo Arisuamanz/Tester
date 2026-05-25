@@ -1,436 +1,538 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Star, Gift, Send, Play, Heart, Sparkles, History, HeartCrack, AlertOctagon, RotateCcw } from 'lucide-react';
-
-const ASSETS = {
-  INTRO_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773673719/grok_video_2026-03-16-23-08-15_zc17sq.mp4",
-  IDLE_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773673040/2026-03-16-225624743_yirzuc.mp4",
-  ANGRY_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773666664/grok_video_2026-03-16-20-55-47_wybg6b.mp4",
-  HAPPY_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773666677/2026-03-16-205614048_ggyysp.mp4",
-  INTRO_BG: "https://i.postimg.cc/gk2XTCBB/Idle.jpg" 
-};
-
-export default function App() {
-  // Fasa Permainan: START_SCREEN -> INTRO_VIDEO -> CHATTING -> ENDING_DELAY -> ENDING_VIDEO -> RESULT_SCREEN
-  const [stage, setStage] = useState('START_SCREEN');
-  const [endingType, setEndingType] = useState(null); 
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Misi Pujuk Kurumi</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel compiler untuk membaca JSX secara terus dalam browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  const [mood, setMood] = useState(15);
-  const [name] = useState('Kurumi');
-
-  const [messages, setMessages] = useState([
-    { id: 1, sender: 'ai', type: 'text', text: "Tak payahlah cari saya lagi... Pergi la makan sorang-sorang... 😔" }
-  ]);
-  
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isFocusMode, setIsFocusMode] = useState(true);
-  
-  const videoRef = useRef(null);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-  const chatContainerRef = useRef(null);
-  const apiKey = ""; 
-
-  const progressPercentage = Math.max(0, Math.min(mood, 100));
-
-  // Skrol automatik ke bawah bila chat bertambah
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping, stage]);
-
-  // Pengurusan main balik video berdasarkan fasa (stage)
-  useEffect(() => {
-    if (videoRef.current && ['INTRO_VIDEO', 'CHATTING', 'ENDING_DELAY', 'ENDING_VIDEO'].includes(stage)) {
-      videoRef.current.load();
-      
-      const isCinematicVideo = stage === 'INTRO_VIDEO' || stage === 'ENDING_VIDEO';
-      videoRef.current.muted = !isCinematicVideo;
-      
-      videoRef.current.play().catch((err) => console.log("Ralat main balik video:", err));
+  <style>
+    .scrollbar-hide::-webkit-scrollbar { display: none; } 
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; } 
+    body { margin: 0; padding: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
+    
+    @keyframes kurumiBubblePop {
+      0% { transform: scale(0.85) translateY(12px); opacity: 0; }
+      70% { transform: scale(1.03) translateY(-2px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
     }
-  }, [stage]);
-
-  const handleVideoEnded = () => {
-    if (stage === 'INTRO_VIDEO') {
-      setStage('CHATTING');
-    } else if (stage === 'ENDING_VIDEO') {
-      setStage('RESULT_SCREEN');
+    
+    .animate-kurumi-bubble {
+      animation: kurumiBubblePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+      transform-origin: left bottom;
     }
-  };
+    
+    .animate-user-bubble {
+      animation: kurumiBubblePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
+      transform-origin: right bottom;
+    }
 
-  const resetGame = () => {
-    setStage('START_SCREEN');
-    setEndingType(null);
-    setMood(15);
-    setMessages([{ id: 1, sender: 'ai', type: 'text', text: "Tak payahlah cari saya lagi... Pergi la makan sorang-sorang... 😔" }]);
-    setInputText('');
-    setIsFocusMode(true);
-  };
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
 
-  const fetchAiResponse = async (chatMessages) => {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-    const contents = chatMessages
-      .filter(msg => msg.type === 'text')
-      .map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-      }));
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-    const systemPrompt = `
-      Anda adalah Kurumi, teman wanita AI pemain.
-      SITUASI PERMAINAN SEKARANG: Anda sedang berasa sangat MERAJUK, SEDIH dan KECIL HATI.
-      
-      Punca anda merajuk: Anda merajuk sebab pasangan (pemain) tidak mahu belanja anda keluar makan atau makan malam bersama hari ini. Anda teringin sangat nak luangkan masa dating dan makan benda sedap, tapi dia abaikan anda.
-      
-      CARA ANDA MERESPON:
-      1. Jawab seperti "chat" mesej biasa (bahasa Melayu kasual, guna 'awak', 'saya', 'sayang').
-      2. PANJANG TEKS: Balas dengan ayat yang SEDERHANA PENDEK (sekitar 1 hingga 3 ayat sahaja untuk chat biasa). Jangan taip karangan yang panjang meleret, melainkan pemain berbual panjang.
-      3. Mula dengan dingin. Jika pemain pujuk dengan baik, tunjukkan kelembutan sikit demi sikit.
-      4. JIKA PEMAIN KASAR ATAU BIADAP, anda mesti bertambah marah.
-      
-      PENTING - MEKANIK PERMAINAN (MATA MOOD):
-      Di akhir SETIAP mesej, WAJIB letak tahap emosi anda secara tersembunyi: [MOOD: X]
-      - Mula sekitar 15.
-      - Naikkan (contoh: 30, 50, 80) jika pemain pujuk ikhlas. Apabila bahagia sepenuhnya, letak [MOOD: 100].
-      - TURUNKAN MOOD jika pemain marah, biadap atau hambar. Jika dia melampau, terus letak [MOOD: 0] (ini bermakna anda mengamuk/putus asa).
-    `;
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-    const payload = {
-      contents,
-      systemInstruction: { parts: [{ text: systemPrompt }] }
+    // --- RE-IMPLEMENTING INLINE SVG ICONS FOR ABSOLUTE COMPATIBILITY ---
+    const ChevronLeft = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    );
+
+    const Star = ({ className }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    );
+
+    const Gift = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <rect x="3" y="8" width="18" height="4" rx="1"/>
+        <path d="M12 8v14M19 12v10H5V12M12 7a3 3 0 1 1-3-3c3 0 3 3 3 3zm0 0a3 3 0 1 0 3-3c0 0-3 3-3 3z"/>
+      </svg>
+    );
+
+    const Send = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    );
+
+    const Play = ({ className }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    );
+
+    const Heart = ({ className }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    );
+
+    const Sparkles = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 5a7 7 0 100 14 7 7 0 000-14z"/>
+      </svg>
+    );
+
+    const History = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    );
+
+    const HeartCrack = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        <path d="m12 5-1 2.5 2 3-2.5 3h3"/>
+      </svg>
+    );
+
+    const AlertOctagon = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    );
+
+    const RotateCcw = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <polyline points="3 3 3 8 8 8"/>
+      </svg>
+    );
+
+    const ASSETS = {
+      INTRO_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773673719/grok_video_2026-03-16-23-08-15_zc17sq.mp4",
+      IDLE_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773673040/2026-03-16-225624743_yirzuc.mp4",
+      ANGRY_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773666664/grok_video_2026-03-16-20-55-47_wybg6b.mp4",
+      HAPPY_VIDEO: "https://res.cloudinary.com/dsqi4tm8x/video/upload/v1773666677/2026-03-16-205614048_ggyysp.mp4",
+      INTRO_BG: "https://i.postimg.cc/gk2XTCBB/Idle.jpg" 
     };
 
-    const delays = [1000, 2000, 4000, 8000];
-    for (let attempt = 0; attempt <= delays.length; attempt++) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        
-        if (!response.ok) throw new Error('API Request Failed');
-        
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Tak ada apa nak cakap...";
-      } catch (error) {
-        if (attempt === delays.length) {
-          return "Server error sekejap... tapi saya masih merajuk! [MOOD: 15]";
+    function App() {
+      const [stage, setStage] = useState('START_SCREEN');
+      const [endingType, setEndingType] = useState(null); 
+      const [mood, setMood] = useState(15);
+      const [name] = useState('Kurumi');
+
+      const [messages, setMessages] = useState([
+        { id: 1, sender: 'ai', type: 'text', text: "Tak payahlah cari saya lagi... Pergi la makan sorang-sorang... 😔" }
+      ]);
+      
+      const [inputText, setInputText] = useState('');
+      const [isTyping, setIsTyping] = useState(false);
+      const [isFocusMode, setIsFocusMode] = useState(true);
+      
+      const videoRef = useRef(null);
+      const messagesEndRef = useRef(null);
+      const inputRef = useRef(null);
+      const chatContainerRef = useRef(null);
+      const apiKey = ""; 
+
+      const progressPercentage = Math.max(0, Math.min(mood, 100));
+
+      // Scroll auto ke bawah diperbaiki agar stabil (tidak terlonjak ke atas pada Desktop/Laptop)
+      useEffect(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
         }
-        await new Promise(resolve => setTimeout(resolve, delays[attempt]));
-      }
-    }
-  };
+      }, [messages, isTyping, stage]);
 
-  const handleSend = async (e) => {
-    e?.preventDefault();
-    if (!inputText.trim() || stage !== 'CHATTING') return;
-    
-    const userText = inputText;
-    setInputText('');
-    
-    const userMsg = { id: Date.now(), sender: 'user', type: 'text', text: userText };
-    setMessages(prev => [...prev, userMsg]);
-    setIsTyping(true);
+      useEffect(() => {
+        if (videoRef.current && ['INTRO_VIDEO', 'CHATTING', 'ENDING_DELAY', 'ENDING_VIDEO'].includes(stage)) {
+          videoRef.current.load();
+          const isCinematicVideo = stage === 'INTRO_VIDEO' || stage === 'ENDING_VIDEO';
+          videoRef.current.muted = !isCinematicVideo;
+          videoRef.current.play().catch((err) => console.log("Ralat video:", err));
+        }
+      }, [stage]);
 
-    const rawResponse = await fetchAiResponse([...messages, userMsg]);
-    
-    let cleanedResponse = rawResponse;
-    let currentMood = mood;
-    const moodMatch = rawResponse.match(/\[MOOD:\s*(-?\d+)\]/i);
-    
-    if (moodMatch) {
-        currentMood = Math.max(0, Math.min(100, parseInt(moodMatch[1], 10)));
-        setMood(currentMood);
-        // Menggunakan regex yang lebih selamat
-        cleanedResponse = rawResponse.replace(/\[MOOD:\s*-?\d+\]/gi, '').trim();
-    }
-    
-    setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'ai', type: 'text', text: cleanedResponse }]);
-    setIsTyping(false);
+      const handleVideoEnded = () => {
+        if (stage === 'INTRO_VIDEO') {
+          setStage('CHATTING');
+        } else if (stage === 'ENDING_VIDEO') {
+          setStage('RESULT_SCREEN');
+        }
+      };
 
-    // Semak keadaan menang atau kalah selepas membalas
-    if (currentMood >= 100) {
-        setStage('ENDING_DELAY');
-        setEndingType('win');
-        setTimeout(() => setStage('ENDING_VIDEO'), 7000); 
-    } else if (currentMood <= 0) {
-        setStage('ENDING_DELAY');
-        setEndingType('lose');
-        setTimeout(() => setStage('ENDING_VIDEO'), 7000);
-    }
-  };
+      const resetGame = () => {
+        setStage('START_SCREEN');
+        setEndingType(null);
+        setMood(15);
+        setMessages([{ id: 1, sender: 'ai', type: 'text', text: "Tak payahlah cari saya lagi... Pergi la makan sorang-sorang... 😔" }]);
+        setInputText('');
+        setIsFocusMode(true);
+      };
 
-  const getVideoSource = () => {
-    if (stage === 'INTRO_VIDEO') return ASSETS.INTRO_VIDEO;
-    if (stage === 'ENDING_VIDEO') return endingType === 'win' ? ASSETS.HAPPY_VIDEO : ASSETS.ANGRY_VIDEO;
-    return ASSETS.IDLE_VIDEO;
-  };
+      const fetchAiResponse = async (chatMessages) => {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const contents = chatMessages
+          .filter(msg => msg.type === 'text')
+          .map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+          }));
 
-  const isUIHidden = stage === 'INTRO_VIDEO' || stage === 'ENDING_VIDEO';
+        const systemPrompt = `
+          Anda adalah Kurumi, teman wanita AI pemain.
+          SITUASI PERMAINAN SEKARANG: Anda sedang berasa sangat MERAJUK, SEDIH dan KECIL HATI.
+          
+          Punca anda merajuk: Anda merajuk sebab pasangan (pemain) tidak mahu belanja anda keluar makan atau makan malam bersama hari ini. Anda teringin sangat nak luangkan masa dating dan makan benda sedap, tapi dia abaikan anda.
+          
+          CARA ANDA MERESPON:
+          1. Jawab seperti "chat" mesej biasa (bahasa Melayu kasual, guna 'awak', 'saya', 'sayang').
+          2. PANJANG TEKS: Balas dengan ayat yang SEDERHANA PENDEK (sekitar 1 hingga 3 ayat sahaja untuk chat biasa). Jangan taip karangan yang panjang meleret, melainkan pemain berbual panjang.
+          3. Mula dengan dingin. Jika pemain pujuk dengan baik, tunjukkan kelembutan sikit demi sikit.
+          4. JIKA PEMAIN KASAR ATAU BIADAP, anda mesti bertambah marah.
+          
+          PENTING - MEKANIK PERMAINAN (MATA MOOD):
+          Di akhir SETIAP mesej, WAJIB letak tahap emosi anda secara tersembunyi: [MOOD: X]
+          - Mula sekitar 15.
+          - Naikkan (contoh: 30, 50, 80) jika pemain pujuk ikhlas. Apabila bahagia sepenuhnya, letak [MOOD: 100].
+          - TURUNKAN MOOD jika pemain marah, biadap atau hambar. Jika dia melampau, terus letak [MOOD: 0] (ini bermakna anda mengamuk/putus asa).
+        `;
 
-  return (
-    <div className="flex items-center justify-center h-[100dvh] w-full bg-[#0a0f1d] overflow-hidden fixed inset-0">
-      <div className="relative w-full h-[100dvh] sm:max-w-[400px] sm:h-[850px] sm:max-h-[95dvh] sm:rounded-[2.5rem] overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.15)] bg-[#0f172a] flex flex-col font-sans text-white sm:border-4 border-x-0 border-[#0f172a]">
+        const payload = {
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
+        };
+
+        const delays = [1000, 2000, 4000, 8000];
+        for (let attempt = 0; attempt <= delays.length; attempt++) {
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) throw new Error('API Request Failed');
+            const data = await response.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Tak ada apa nak cakap...";
+          } catch (error) {
+            if (attempt === delays.length) {
+              return "Server error sekejap... tapi saya masih merajuk! [MOOD: 15]";
+            }
+            await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+          }
+        }
+      };
+
+      const handleSend = async (e) => {
+        e?.preventDefault();
+        if (!inputText.trim() || stage !== 'CHATTING') return;
         
-        {stage === 'RESULT_SCREEN' && (
-          <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#0f172a] animate-in fade-in zoom-in duration-500">
-            {endingType === 'win' ? (
-              <div className="flex flex-col items-center text-center px-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-pink-500 blur-[30px] opacity-20 rounded-full"></div>
-                  <Sparkles className="relative w-20 h-20 text-pink-400 mb-6 animate-pulse" />
-                </div>
-                <h2 className="text-3xl font-black text-pink-100 mb-4 drop-shadow-md">
-                  MISI BERJAYA
-                </h2>
-                <p className="text-pink-200/80 text-base mb-10 leading-relaxed max-w-[280px]">
-                  Tahniah! Kurumi dah tak merajuk dan sangat bahagia. Awak memang pakar pujuk! ❤️
-                </p>
-                <button onClick={resetGame} className="flex items-center gap-2 px-8 py-3 bg-[#1e293b] border border-pink-500/30 rounded-full font-bold text-pink-100 shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:bg-pink-500/20 active:scale-95 transition-all">
-                  <RotateCcw className="w-4 h-4" /> Main Semula
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center text-center px-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-red-600 blur-[30px] opacity-20 rounded-full"></div>
-                  <HeartCrack className="relative w-20 h-20 text-red-400 mb-6 animate-bounce" style={{animationDuration: '2s'}} />
-                </div>
-                <h2 className="text-3xl font-black text-red-100 mb-4 drop-shadow-md">
-                  GAME OVER
-                </h2>
-                <p className="text-red-200/80 text-base mb-10 leading-relaxed max-w-[280px]">
-                  Alamak... Kurumi betul-betul mengamuk dan tawar hati dengan awak. Habis laa... 💔
-                </p>
-                <button onClick={resetGame} className="flex items-center gap-2 px-8 py-3 bg-[#1e293b] border border-red-500/30 rounded-full font-bold text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.15)] hover:bg-red-500/20 active:scale-95 transition-all">
-                  <RotateCcw className="w-4 h-4" /> Cuba Pujuk Lagi
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        const userText = inputText;
+        setInputText('');
+        
+        const userMsg = { id: Date.now(), sender: 'user', type: 'text', text: userText };
+        setMessages(prev => [...prev, userMsg]);
+        setIsTyping(true);
 
-        {stage === 'START_SCREEN' && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0f1d] animate-fade-in">
-            <img src={ASSETS.INTRO_BG} alt="Intro" className="absolute inset-0 w-full h-full object-cover opacity-70" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1d]/80 via-[#0a0f1d]/40 to-[#0a0f1d]/90 backdrop-blur-[3px]"></div>
+        const rawResponse = await fetchAiResponse([...messages, userMsg]);
+        
+        let cleanedResponse = rawResponse;
+        let currentMood = mood;
+        const moodMatch = rawResponse.match(/\[MOOD:\s*(-?\d+)\]/i);
+        
+        if (moodMatch) {
+            currentMood = Math.max(0, Math.min(100, parseInt(moodMatch[1], 10)));
+            setMood(currentMood);
+            cleanedResponse = rawResponse.replace(/\[MOOD:\s*-?\d+\]/gi, '').trim();
+        }
+        
+        setMessages((prev) => [...prev, { id: Date.now() + 1, sender: 'ai', type: 'text', text: cleanedResponse }]);
+        setIsTyping(false);
+
+        if (currentMood >= 100) {
+            setStage('ENDING_DELAY');
+            setEndingType('win');
+            setTimeout(() => setStage('ENDING_VIDEO'), 7000); 
+        } else if (currentMood <= 0) {
+            setStage('ENDING_DELAY');
+            setEndingType('lose');
+            setTimeout(() => setStage('ENDING_VIDEO'), 7000);
+        }
+      };
+
+      const getVideoSource = () => {
+        if (stage === 'INTRO_VIDEO') return ASSETS.INTRO_VIDEO;
+        if (stage === 'ENDING_VIDEO') return endingType === 'win' ? ASSETS.HAPPY_VIDEO : ASSETS.ANGRY_VIDEO;
+        return ASSETS.IDLE_VIDEO;
+      };
+
+      const isUIHidden = stage === 'INTRO_VIDEO' || stage === 'ENDING_VIDEO';
+
+      return (
+        <div className="flex items-center justify-center h-[100dvh] w-full bg-[#0a0f1d] overflow-hidden fixed inset-0">
+          <div className="relative w-full h-[100dvh] sm:max-w-[400px] sm:h-[850px] sm:max-h-[95dvh] sm:rounded-[2.5rem] overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.15)] bg-[#0f172a] flex flex-col font-sans text-white sm:border-4 border-x-0 border-[#0f172a]">
             
-            <div className="relative z-10 text-center px-8 flex flex-col items-center">
-              <Heart className="w-12 h-12 text-pink-400 mb-6 animate-pulse opacity-80" />
-              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-pink-100 to-pink-400 mb-3 tracking-tighter drop-shadow-lg">
-                MISI: PUJUK KURUMI
-              </h1>
-              <p className="text-blue-100/80 text-sm mb-12 leading-relaxed max-w-xs">
-                Kurumi merajuk sebab awak tak belanja dia makan. Pujuk dia sampai moodnya kembali 100%. Hati-hati, kalau mood cecah 0%, dia akan mengamuk!
-              </p>
-              <button onClick={() => setStage('INTRO_VIDEO')} className="group relative px-10 py-4 bg-white/10 border border-pink-300/30 backdrop-blur-md text-pink-100 font-bold rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)]">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-600/50 to-rose-600/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span className="relative z-10 flex items-center gap-2 uppercase tracking-wider text-sm">
-                  Mula Borak <Play className="w-4 h-4 fill-current" />
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {stage !== 'START_SCREEN' && stage !== 'RESULT_SCREEN' && (
-          <div className={`absolute inset-0 w-full h-[100dvh] z-0 pointer-events-none transition-opacity duration-500 overflow-hidden ${stage === 'ENDING_DELAY' ? 'opacity-80 scale-105' : 'opacity-100 scale-100'}`}>
-            <video 
-              ref={videoRef} 
-              playsInline 
-              onEnded={handleVideoEnded}
-              loop={stage === 'CHATTING' || stage === 'ENDING_DELAY'}
-              className="absolute inset-0 w-full h-full object-cover z-10"
-              src={getVideoSource()}
-            />
-            
-            {!isUIHidden && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/95 via-[#0f172a]/20 to-transparent h-40 pointer-events-none z-15"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1d] via-[#0a0f1d]/80 to-transparent top-1/2 h-1/2 pointer-events-none z-15"></div>
-              </>
-            )}
-            
-            {stage === 'ENDING_DELAY' && endingType === 'lose' && (
-              <div className="absolute inset-0 bg-red-900/40 animate-pulse pointer-events-none z-20 blend-color-burn"></div>
-            )}
-            {stage === 'ENDING_DELAY' && endingType === 'win' && (
-              <div className="absolute inset-0 bg-pink-100/20 animate-pulse pointer-events-none z-20 blend-screen"></div>
-            )}
-          </div>
-        )}
-
-        {!isUIHidden && stage !== 'START_SCREEN' && stage !== 'RESULT_SCREEN' && (
-          <div className="relative z-20 flex flex-col h-full w-full">
-            <header className="shrink-0 flex items-center justify-between px-4 py-4 pt-10 sm:pt-4 bg-transparent animate-fade-in">
-              <div className="flex items-center gap-3">
-                <button onClick={() => setStage('START_SCREEN')} className="p-1.5 hover:bg-white/10 rounded-full transition-colors relative z-50">
-                  <ChevronLeft className="w-6 h-6 text-pink-100" />
-                </button>
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-full border-2 border-pink-400/30 overflow-hidden shadow-lg">
-                    <img src={ASSETS.INTRO_BG} alt="Profile" className="w-full h-full object-cover" />
+            {stage === 'RESULT_SCREEN' && (
+              <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#0a0f1d]/90 backdrop-blur-3xl animate-in fade-in zoom-in duration-500">
+                {endingType === 'win' ? (
+                  <div className="flex flex-col items-center text-center px-6 max-w-[320px]">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-pink-500 blur-[30px] opacity-30 rounded-full"></div>
+                      <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-400 to-rose-600 flex items-center justify-center shadow-lg border border-pink-300/30">
+                        <Sparkles className="w-12 h-12 text-white animate-bounce" />
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-pink-500 mb-2 drop-shadow-md">
+                      MISI BERJAYA
+                    </h2>
+                    <p className="text-pink-100/90 text-sm mb-10 leading-relaxed">
+                      Tahniah! Kurumi dah tak merajuk dan sangat bahagia. Awak memang pakar pujuk! ❤️
+                    </p>
+                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-pink-500 hover:bg-pink-600 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider">
+                      <RotateCcw className="w-4 h-4" /> Main Semula
+                    </button>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-bold text-lg tracking-wide text-pink-50">{name}</span>
-                    <span className="text-[10px] text-pink-300 font-bold flex items-center gap-1">
-                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mood === 0 ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'bg-pink-400 shadow-[0_0_5px_rgba(244,63,94,0.8)]'}`}></span> 
-                      {mood === 0 ? 'Mengamuk 😡' : mood >= 100 ? 'Bahagia ❤️' : 'Merajuk 😔'}
-                    </span>
+                ) : (
+                  <div className="flex flex-col items-center text-center px-6 max-w-[320px]">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-red-600 blur-[30px] opacity-30 rounded-full"></div>
+                      <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500 to-red-800 flex items-center justify-center shadow-lg border border-red-400/30">
+                        <HeartCrack className="w-12 h-12 text-white animate-bounce" />
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-200 to-red-500 mb-2 drop-shadow-md">
+                      GAME OVER
+                    </h2>
+                    <p className="text-red-100/90 text-sm mb-10 leading-relaxed">
+                      Alamak... Kurumi betul-betul mengamuk dan tawar hati dengan awak. Cuba pujuk lembut-lembut nanti... 💔
+                    </p>
+                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-red-600 hover:bg-red-700 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider">
+                      <RotateCcw className="w-4 h-4" /> Cuba Lagi
+                    </button>
                   </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsFocusMode(!isFocusMode)}
-                  className={`p-2 rounded-xl border flex items-center gap-1.5 transition-all duration-300 z-50 ${
-                    !isFocusMode
-                      ? 'bg-pink-500/20 text-pink-300 border-pink-500/40 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
-                      : 'bg-[#0a0f1d]/60 text-pink-200 border-pink-500/20 hover:bg-white/5'
-                  }`}
-                  title={!isFocusMode ? "Tutup Sejarah Sembang" : "Lihat Sembang Lepas"}
-                >
-                  <History className={`w-4 h-4 transition-transform duration-300 ${!isFocusMode ? 'rotate-180 text-pink-400' : ''}`} />
-                  <span className="text-xs font-bold hidden xs:inline">
-                    {!isFocusMode ? 'Sembang Penuh' : 'History'}
-                  </span>
-                </button>
-
-                <div className="relative w-10 h-10 flex items-center justify-center">
-                  <svg className="absolute w-full h-full -rotate-90">
-                    <circle cx="20" cy="20" r="17" fill="transparent" stroke={mood <= 20 ? "rgba(239, 68, 68, 0.2)" : "rgba(244, 63, 94, 0.2)"} strokeWidth="3" />
-                    <circle 
-                      cx="20" cy="20" r="17" fill="transparent" 
-                      stroke={mood <= 20 ? "#ef4444" : "#f43f5e"} 
-                      strokeWidth="3" strokeDasharray={107} 
-                      strokeDashoffset={107 - (107 * progressPercentage) / 100} 
-                      strokeLinecap="round" className="transition-all duration-500 ease-out" 
-                    />
-                  </svg>
-                  <div className="relative w-7 h-7 rounded-full bg-[#0a0f1d]/60 backdrop-blur-md flex items-center justify-center border border-pink-500/20">
-                    {mood === 0 ? <AlertOctagon className="w-3.5 h-3.5 text-red-500 animate-ping" /> : <Heart className={`w-3.5 h-3.5 transition-colors ${mood >= 100 ? 'text-pink-500 fill-pink-500' : 'text-pink-300'}`} />}
-                  </div>
-                </div>
-                <div className={`h-8 flex items-center backdrop-blur-md px-3 rounded-xl border gap-2 shadow-md ${mood === 0 ? 'bg-red-900/60 border-red-500/50' : 'bg-[#0a0f1d]/60 border-pink-500/20'}`}>
-                   <span className={`font-bold text-sm ${mood === 0 ? 'text-red-200' : 'text-pink-100'}`}>{mood}%</span>
-                </div>
-              </div>
-            </header>
-
-            <main ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3 scrollbar-hide relative z-20">
-              {stage === 'ENDING_DELAY' && (
-                <div className="flex justify-center mb-2 animate-pulse">
-                  <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${endingType === 'lose' ? 'bg-red-600/80 text-white' : 'bg-pink-500/80 text-white'}`}>
-                    {endingType === 'lose' ? 'Kritikal: Kurumi akan meletup!' : 'Menang: Kurumi sangat bahagia!'}
-                  </span>
-                </div>
-              )}
-
-              {!isFocusMode && stage === 'CHATTING' && (
-                <div className="flex flex-col items-center gap-2 mt-2 mb-4">
-                  <span className={`px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border ${
-                    mood < 30 ? 'bg-red-900/30 text-red-200/80 border-red-400/20' : 
-                    mood < 80 ? 'bg-yellow-900/30 text-yellow-200/80 border-yellow-400/20' : 
-                    'bg-pink-900/30 text-pink-200/80 border-pink-400/20'
-                  }`}>
-                    Status: {mood < 30 ? 'Merajuk Sengit' : mood < 80 ? 'Masih Ragu-ragu' : 'Manja & Gembira ❤️'}
-                  </span>
-                </div>
-              )}
-
-              {isFocusMode && <div className="flex-1" />}
-
-              {(isFocusMode ? messages.slice(-2) : messages).map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`px-4 py-3 max-w-[85%] text-[15px] font-medium leading-relaxed shadow-xl ${
-                    msg.sender === 'user' 
-                      ? 'bg-pink-600/40 rounded-2xl rounded-tr-sm text-white border border-pink-400/20 animate-user-bubble' 
-                      : `bg-[#1e293b]/40 rounded-2xl rounded-bl-sm border ${mood === 0 && stage==='ENDING_DELAY' ? 'border-red-500/40 text-red-100 shadow-[0_0_15px_rgba(220,38,38,0.3)]' : 'border-pink-300/10 text-pink-50'} animate-kurumi-bubble`
-                  }`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="px-4 py-3 bg-[#1e293b]/40 rounded-2xl border border-pink-300/10 flex items-center gap-1.5 h-10 animate-kurumi-bubble">
-                    <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce" style={{animationDelay:'150ms'}}></div>
-                    <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce" style={{animationDelay:'300ms'}}></div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} className="h-4 shrink-0" />
-            </main>
-
-            <footer className="shrink-0 px-4 pb-6 pt-2 flex items-center gap-3 bg-gradient-to-t from-[#0a0f1d] via-[#0a0f1d]/90 to-transparent transition-opacity duration-300 relative z-20">
-              <form onSubmit={handleSend} className={`flex-1 flex items-center gap-2 backdrop-blur-xl rounded-full px-4 py-2.5 shadow-2xl transition-colors ${
-                stage === 'ENDING_DELAY' 
-                  ? 'bg-slate-800/80 border border-slate-600/30 opacity-70 cursor-not-allowed' 
-                  : 'bg-[#0f172a]/70 border border-pink-300/20'
-              }`}>
-                <Star className={`w-4 h-4 fill-current ${stage === 'ENDING_DELAY' ? 'text-slate-500' : 'text-pink-200/40 animate-pulse'}`} />
-                <input 
-                  ref={inputRef}
-                  type="text" 
-                  value={inputText} 
-                  onChange={(e) => setInputText(e.target.value)} 
-                  onFocus={() => {
-                    setTimeout(() => {
-                      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                    }, 300);
-                  }}
-                  placeholder={stage === 'ENDING_DELAY' ? "Membaca reaksi Kurumi..." : `Pujuk ${name}...`} 
-                  disabled={stage === 'ENDING_DELAY' || isTyping}
-                  className="flex-1 bg-transparent text-sm text-pink-50 placeholder-pink-200/40 focus:outline-none appearance-none disabled:opacity-50" 
-                />
-                {inputText.trim() && stage === 'CHATTING' && (
-                  <button type="submit" className="text-pink-400 hover:text-pink-300 p-1 transition-transform active:scale-95 z-50">
-                    <Send className="w-5 h-5" />
-                  </button>
                 )}
-              </form>
-              <button disabled={stage === 'ENDING_DELAY'} className="w-12 h-12 flex items-center justify-center rounded-full bg-[#0f172a]/70 backdrop-blur-xl border border-pink-300/20 shadow-xl hover:bg-pink-500/10 active:scale-95 transition-all disabled:opacity-50 z-50">
-                <Gift className={`w-6 h-6 ${stage === 'ENDING_DELAY' ? 'text-slate-500' : 'text-pink-200'}`} />
-              </button>
-            </footer>
+              </div>
+            )}
+
+            {stage === 'START_SCREEN' && (
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0f1d] animate-fade-in">
+                <img src={ASSETS.INTRO_BG} alt="Intro" className="absolute inset-0 w-full h-full object-cover opacity-70" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1d]/80 via-[#0a0f1d]/40 to-[#0a0f1d]/90 backdrop-blur-[3px]"></div>
+                
+                <div className="relative z-10 text-center px-8 flex flex-col items-center">
+                  <Heart className="w-12 h-12 text-pink-400 mb-6 animate-pulse opacity-80" />
+                  <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-pink-100 to-pink-400 mb-3 tracking-tighter drop-shadow-lg">
+                    MISI: PUJUK KURUMI
+                  </h1>
+                  <p className="text-blue-100/80 text-sm mb-12 leading-relaxed max-w-xs">
+                    Kurumi merajuk sebab awak tak belanja dia makan. Pujuk dia sampai moodnya kembali 100%. Hati-hati, kalau mood cecah 0%, dia akan mengamuk!
+                  </p>
+                  <button onClick={() => setStage('INTRO_VIDEO')} className="group relative px-10 py-4 bg-white/10 border border-pink-300/30 backdrop-blur-md text-pink-100 font-bold rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+                    <div className="absolute inset-0 bg-gradient-to-r from-pink-600/50 to-rose-600/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <span className="relative z-10 flex items-center gap-2 uppercase tracking-wider text-sm">
+                      Mula Borak <Play className="w-4 h-4 fill-current" />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {stage !== 'START_SCREEN' && stage !== 'RESULT_SCREEN' && (
+              <div className={`absolute inset-0 w-full h-full z-0 pointer-events-none transition-opacity duration-500 overflow-hidden ${stage === 'ENDING_DELAY' ? 'opacity-80 scale-105' : 'opacity-100 scale-100'}`}>
+                <video 
+                  ref={videoRef} 
+                  playsInline 
+                  onEnded={handleVideoEnded}
+                  loop={stage === 'CHATTING' || stage === 'ENDING_DELAY'}
+                  className="absolute inset-0 w-full h-full object-cover z-10"
+                  src={getVideoSource()}
+                />
+                
+                {!isUIHidden && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a]/95 via-[#0f172a]/20 to-transparent h-40 pointer-events-none z-15"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1d] via-[#0a0f1d]/80 to-transparent top-1/2 h-1/2 pointer-events-none z-15"></div>
+                  </>
+                )}
+                
+                {stage === 'ENDING_DELAY' && endingType === 'lose' && (
+                  <div className="absolute inset-0 bg-red-900/40 animate-pulse pointer-events-none z-20 blend-color-burn"></div>
+                )}
+                {stage === 'ENDING_DELAY' && endingType === 'win' && (
+                  <div className="absolute inset-0 bg-pink-100/20 animate-pulse pointer-events-none z-20 blend-screen"></div>
+                )}
+              </div>
+            )}
+
+            {!isUIHidden && stage !== 'START_SCREEN' && stage !== 'RESULT_SCREEN' && (
+              <div className="relative z-20 flex flex-col h-full w-full">
+                <header className="shrink-0 flex items-center justify-between px-4 py-4 pt-10 sm:pt-4 bg-transparent animate-fade-in">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setStage('START_SCREEN')} className="p-1.5 hover:bg-white/10 rounded-full transition-colors relative z-50">
+                      <ChevronLeft className="w-6 h-6 text-pink-100" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full border-2 border-pink-400/30 overflow-hidden shadow-lg">
+                        <img src={ASSETS.INTRO_BG} alt="Profile" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-lg tracking-wide text-pink-50">{name}</span>
+                        <span className="text-[10px] text-pink-300 font-bold flex items-center gap-1">
+                          <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mood === 0 ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'bg-pink-400 shadow-[0_0_5px_rgba(244,63,94,0.8)]'}`}></span> 
+                          {mood === 0 ? 'Mengamuk 😡' : mood >= 100 ? 'Bahagia ❤️' : 'Merajuk 😔'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsFocusMode(!isFocusMode)}
+                      className={`p-2 rounded-xl border flex items-center gap-1.5 transition-all duration-300 z-50 ${
+                        !isFocusMode
+                          ? 'bg-pink-500/20 text-pink-300 border-pink-500/40 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
+                          : 'bg-[#0a0f1d]/60 text-pink-200 border-pink-500/20 hover:bg-white/5'
+                      }`}
+                      title={!isFocusMode ? "Tutup Sejarah Sembang" : "Lihat Sembang Lepas"}
+                    >
+                      <History className={`w-4 h-4 transition-transform duration-300 ${!isFocusMode ? 'rotate-180 text-pink-400' : ''}`} />
+                      <span className="text-xs font-bold hidden xs:inline">
+                        {!isFocusMode ? 'Sembang Penuh' : 'History'}
+                      </span>
+                    </button>
+
+                    <div className="relative w-10 h-10 flex items-center justify-center">
+                      <svg className="absolute w-full h-full -rotate-90">
+                        <circle cx="20" cy="20" r="17" fill="transparent" stroke={mood <= 20 ? "rgba(239, 68, 68, 0.2)" : "rgba(244, 63, 94, 0.2)"} strokeWidth="3" />
+                        <circle 
+                          cx="20" cy="20" r="17" fill="transparent" 
+                          stroke={mood <= 20 ? "#ef4444" : "#f43f5e"} 
+                          strokeWidth="3" strokeDasharray={107} 
+                          strokeDashoffset={107 - (107 * progressPercentage) / 100} 
+                          strokeLinecap="round" className="transition-all duration-500 ease-out" 
+                        />
+                      </svg>
+                      <div className="relative w-7 h-7 rounded-full bg-[#0a0f1d]/60 backdrop-blur-md flex items-center justify-center border border-pink-500/20">
+                        {mood === 0 ? <AlertOctagon className="w-3.5 h-3.5 text-red-500 animate-ping" /> : <Heart className={`w-3.5 h-3.5 transition-colors ${mood >= 100 ? 'text-pink-500 fill-pink-500' : 'text-pink-300'}`} />}
+                      </div>
+                    </div>
+                    <div className={`h-8 flex items-center backdrop-blur-md px-3 rounded-xl border gap-2 shadow-md ${mood === 0 ? 'bg-red-900/60 border-red-500/50' : 'bg-[#0a0f1d]/60 border-pink-500/20'}`}>
+                       <span className={`font-bold text-sm ${mood === 0 ? 'text-red-200' : 'text-pink-100'}`}>{mood}%</span>
+                    </div>
+                  </div>
+                </header>
+
+                <main ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3 scrollbar-hide relative z-20">
+                  {stage === 'ENDING_DELAY' && (
+                    <div className="flex justify-center mb-2 animate-pulse">
+                      <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${endingType === 'lose' ? 'bg-red-600/80 text-white' : 'bg-pink-500/80 text-white'}`}>
+                        {endingType === 'lose' ? 'Kritikal: Kurumi akan meletup!' : 'Menang: Kurumi sangat bahagia!'}
+                      </span>
+                    </div>
+                  )}
+
+                  {!isFocusMode && stage === 'CHATTING' && (
+                    <div className="flex flex-col items-center gap-2 mt-2 mb-4">
+                      <span className={`px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border ${
+                        mood < 30 ? 'bg-red-900/30 text-red-200/80 border-red-400/20' : 
+                        mood < 80 ? 'bg-yellow-900/30 text-yellow-200/80 border-yellow-400/20' : 
+                        'bg-pink-900/30 text-pink-200/80 border-pink-400/20'
+                      }`}>
+                        Status: {mood < 30 ? 'Merajuk Sengit' : mood < 80 ? 'Masih Ragu-ragu' : 'Manja & Gembira ❤️'}
+                      </span>
+                    </div>
+                  )}
+
+                  {isFocusMode && <div className="flex-1" />}
+
+                  {(isFocusMode ? messages.slice(-2) : messages).map((msg) => (
+                    <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`px-4 py-3 max-w-[85%] text-[15px] font-medium leading-relaxed shadow-xl ${
+                        msg.sender === 'user' 
+                          ? 'bg-pink-600/40 rounded-2xl rounded-tr-sm text-white border border-pink-400/20 animate-user-bubble' 
+                          : `bg-[#1e293b]/40 rounded-2xl rounded-bl-sm border ${mood === 0 && stage==='ENDING_DELAY' ? 'border-red-500/40 text-red-100 shadow-[0_0_15px_rgba(220,38,38,0.3)]' : 'border-pink-300/10 text-pink-50'} animate-kurumi-bubble`
+                      }`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="px-4 py-3 bg-[#1e293b]/40 rounded-2xl border border-pink-300/10 flex items-center gap-1.5 h-10 animate-kurumi-bubble">
+                        <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce" style={{animationDelay:'150ms'}}></div>
+                        <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-bounce" style={{animationDelay:'300ms'}}></div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} className="h-4 shrink-0" />
+                </main>
+
+                <footer className="shrink-0 px-4 pb-6 pt-2 flex items-center gap-3 bg-gradient-to-t from-[#0a0f1d] via-[#0a0f1d]/90 to-transparent transition-opacity duration-300 relative z-20">
+                  <form onSubmit={handleSend} className={`flex-1 flex items-center gap-2 backdrop-blur-xl rounded-full px-4 py-2.5 shadow-2xl transition-colors ${
+                    stage === 'ENDING_DELAY' 
+                      ? 'bg-slate-800/80 border border-slate-600/30 opacity-70 cursor-not-allowed' 
+                      : 'bg-[#0f172a]/70 border border-pink-300/20'
+                  }`}>
+                    <Star className={`w-4 h-4 fill-current ${stage === 'ENDING_DELAY' ? 'text-slate-500' : 'text-pink-200/40 animate-pulse'}`} />
+                    <input 
+                      ref={inputRef}
+                      type="text" 
+                      value={inputText} 
+                      onChange={(e) => setInputText(e.target.value)} 
+                      onFocus={() => {
+                        setTimeout(() => {
+                          if (chatContainerRef.current) {
+                            chatContainerRef.current.scrollTo({
+                              top: chatContainerRef.current.scrollHeight,
+                              behavior: 'smooth'
+                            });
+                          }
+                        }, 300);
+                      }}
+                      placeholder={stage === 'ENDING_DELAY' ? "Membaca reaksi Kurumi..." : `Pujuk ${name}...`} 
+                      disabled={stage === 'ENDING_DELAY' || isTyping}
+                      className="flex-1 bg-transparent text-sm text-pink-50 placeholder-pink-200/40 focus:outline-none appearance-none disabled:opacity-50" 
+                    />
+                    {inputText.trim() && stage === 'CHATTING' && (
+                      <button type="submit" className="text-pink-400 hover:text-pink-300 p-1 transition-transform active:scale-95 z-50">
+                        <Send className="w-5 h-5" />
+                      </button>
+                    )}
+                  </form>
+                  <button disabled={stage === 'ENDING_DELAY'} className="w-12 h-12 flex items-center justify-center rounded-full bg-[#0f172a]/70 backdrop-blur-xl border border-pink-300/20 shadow-xl hover:bg-pink-500/10 active:scale-95 transition-all disabled:opacity-50 z-50">
+                    <Gift className={`w-6 h-6 ${stage === 'ENDING_DELAY' ? 'text-slate-500' : 'text-pink-200'}`} />
+                  </button>
+                </footer>
+              </div>
+            )}
           </div>
-        )}
       </div>
+    );
+  }
 
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; } 
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; } 
-        body { margin: 0; padding: 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
-        
-        @keyframes kurumiBubblePop {
-          0% { transform: scale(0.85) translateY(12px); opacity: 0; }
-          70% { transform: scale(1.03) translateY(-2px); }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        
-        .animate-kurumi-bubble {
-          animation: kurumiBubblePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
-          transform-origin: left bottom;
-        }
-        
-        .animate-user-bubble {
-          animation: kurumiBubblePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
-          transform-origin: right bottom;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
-}
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+</body>
+</html>
