@@ -148,7 +148,7 @@
       const messagesEndRef = useRef(null);
       const inputRef = useRef(null);
       const chatContainerRef = useRef(null);
-      const apiKey = ""; 
+      const apiKey = "AIzaSyAXb9DMUECsh0R3RGSqqHZr5DpKON57PA4"; 
 
       const progressPercentage = Math.max(0, Math.min(mood, 100));
 
@@ -201,7 +201,7 @@
           Anda adalah Kurumi, teman wanita AI pemain.
           SITUASI PERMAINAN SEKARANG: Anda sedang berasa sangat MERAJUK, SEDIH dan KECIL HATI.
           
-          Punca anda merajuk: Anda merajuk sebab pasangan (pemain) tidak mahu belanja anda keluar makan atau makan malam bersama hari ini. Anda teringin sangat nak luangkan masa dating dan makan benda sedap, tapi dia abaikan anda.
+          Punca anda merajuk: Anda merajuk sebab pasangan (pemain) tidak mahu belanja anda keluar makan atau makan malam bersama hari ini. Anda teringin sangat nak luangkan masa dating dan makan [...]
           
           CARA ANDA MERESPON:
           1. Jawab seperti "chat" mesej biasa (bahasa Melayu kasual, guna 'awak', 'saya', 'sayang').
@@ -289,7 +289,7 @@
 
       return (
         <div className="flex items-center justify-center h-[100dvh] w-full bg-[#0a0f1d] overflow-hidden fixed inset-0">
-          <div className="relative w-full h-[100dvh] sm:max-w-[400px] sm:h-[850px] sm:max-h-[95dvh] sm:rounded-[2.5rem] overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.15)] bg-[#0f172a] flex flex-col font-sans text-white sm:border-4 border-x-0 border-[#0f172a]">
+          <div className="relative w-full h-[100dvh] sm:max-w-[400px] sm:h-[850px] sm:max-h-[95dvh] sm:rounded-[2.5rem] overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.15)] bg-[#0f172a] flex fl[...]
             
             {stage === 'RESULT_SCREEN' && (
               <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-[#0a0f1d]/90 backdrop-blur-3xl animate-in fade-in zoom-in duration-500">
@@ -307,7 +307,7 @@
                     <p className="text-pink-100/90 text-sm mb-10 leading-relaxed">
                       Tahniah! Kurumi dah tak merajuk dan sangat bahagia. Awak memang pakar pujuk! ❤️
                     </p>
-                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-pink-500 hover:bg-pink-600 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider">
+                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-pink-500 hover:bg-pink-600 rounded-full font-bold text-white shadow-lg active:scale-95 transiti[...]
                       <RotateCcw className="w-4 h-4" /> Main Semula
                     </button>
                   </div>
@@ -325,7 +325,7 @@
                     <p className="text-red-100/90 text-sm mb-10 leading-relaxed">
                       Alamak... Kurumi betul-betul mengamuk dan tawar hati dengan awak. Cuba pujuk lembut-lembut nanti... 💔
                     </p>
-                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-red-600 hover:bg-red-700 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all text-sm uppercase tracking-wider">
+                    <button onClick={resetGame} className="flex items-center gap-2.5 px-8 py-3.5 bg-red-600 hover:bg-red-700 rounded-full font-bold text-white shadow-lg active:scale-95 transition[...]
                       <RotateCcw className="w-4 h-4" /> Cuba Lagi
                     </button>
                   </div>
@@ -346,7 +346,7 @@
                   <p className="text-blue-100/80 text-sm mb-12 leading-relaxed max-w-xs">
                     Kurumi merajuk sebab awak tak belanja dia makan. Pujuk dia sampai moodnya kembali 100%. Hati-hati, kalau mood cecah 0%, dia akan mengamuk!
                   </p>
-                  <button onClick={() => setStage('INTRO_VIDEO')} className="group relative px-10 py-4 bg-white/10 border border-pink-300/30 backdrop-blur-md text-pink-100 font-bold rounded-full overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+                  <button onClick={() => setStage('INTRO_VIDEO')} className="group relative px-10 py-4 bg-white/10 border border-pink-300/30 backdrop-blur-md text-pink-100 font-bold rounded-full [...]
                     <div className="absolute inset-0 bg-gradient-to-r from-pink-600/50 to-rose-600/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <span className="relative z-10 flex items-center gap-2 uppercase tracking-wider text-sm">
                       Mula Borak <Play className="w-4 h-4 fill-current" />
@@ -357,7 +357,7 @@
             )}
 
             {stage !== 'START_SCREEN' && stage !== 'RESULT_SCREEN' && (
-              <div className={`absolute inset-0 w-full h-full z-0 pointer-events-none transition-opacity duration-500 overflow-hidden ${stage === 'ENDING_DELAY' ? 'opacity-80 scale-105' : 'opacity-100 scale-100'}`}>
+              <div className={`absolute inset-0 w-full h-full z-0 pointer-events-none transition-opacity duration-500 overflow-hidden ${stage === 'ENDING_DELAY' ? 'opacity-80 scale-105' : 'opacit[...]
                 <video 
                   ref={videoRef} 
                   playsInline 
@@ -397,7 +397,7 @@
                       <div className="flex flex-col">
                         <span className="font-bold text-lg tracking-wide text-pink-50">{name}</span>
                         <span className="text-[10px] text-pink-300 font-bold flex items-center gap-1">
-                          <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mood === 0 ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'bg-pink-400 shadow-[0_0_5px_rgba(244,63,94,0.8)]'}`}></span> 
+                          <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${mood === 0 ? 'bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]' : 'bg-pink-400 shadow-[0_0_5px_rgba(244,63,94,0[...]
                           {mood === 0 ? 'Mengamuk 😡' : mood >= 100 ? 'Bahagia ❤️' : 'Merajuk 😔'}
                         </span>
                       </div>
@@ -432,10 +432,10 @@
                         />
                       </svg>
                       <div className="relative w-7 h-7 rounded-full bg-[#0a0f1d]/60 backdrop-blur-md flex items-center justify-center border border-pink-500/20">
-                        {mood === 0 ? <AlertOctagon className="w-3.5 h-3.5 text-red-500 animate-ping" /> : <Heart className={`w-3.5 h-3.5 transition-colors ${mood >= 100 ? 'text-pink-500 fill-pink-500' : 'text-pink-300'}`} />}
+                        {mood === 0 ? <AlertOctagon className="w-3.5 h-3.5 text-red-500 animate-ping" /> : <Heart className={`w-3.5 h-3.5 transition-colors ${mood >= 100 ? 'text-pink-500 fill-pin[...]
                       </div>
                     </div>
-                    <div className={`h-8 flex items-center backdrop-blur-md px-3 rounded-xl border gap-2 shadow-md ${mood === 0 ? 'bg-red-900/60 border-red-500/50' : 'bg-[#0a0f1d]/60 border-pink-500/20'}`}>
+                    <div className={`h-8 flex items-center backdrop-blur-md px-3 rounded-xl border gap-2 shadow-md ${mood === 0 ? 'bg-red-900/60 border-red-500/50' : 'bg-[#0a0f1d]/60 border-pink-[...]
                        <span className={`font-bold text-sm ${mood === 0 ? 'text-red-200' : 'text-pink-100'}`}>{mood}%</span>
                     </div>
                   </div>
@@ -444,7 +444,7 @@
                 <main ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-3 scrollbar-hide relative z-20">
                   {stage === 'ENDING_DELAY' && (
                     <div className="flex justify-center mb-2 animate-pulse">
-                      <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${endingType === 'lose' ? 'bg-red-600/80 text-white' : 'bg-pink-500/80 text-white'}`}>
+                      <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${endingType === 'lose' ? 'bg-red-600/80 text-white' : 'bg-pink-500/80 text-white'}`[...]
                         {endingType === 'lose' ? 'Kritikal: Kurumi akan meletup!' : 'Menang: Kurumi sangat bahagia!'}
                       </span>
                     </div>
@@ -469,7 +469,7 @@
                       <div className={`px-4 py-3 max-w-[85%] text-[15px] font-medium leading-relaxed shadow-xl ${
                         msg.sender === 'user' 
                           ? 'bg-pink-600/40 rounded-2xl rounded-tr-sm text-white border border-pink-400/20 animate-user-bubble' 
-                          : `bg-[#1e293b]/40 rounded-2xl rounded-bl-sm border ${mood === 0 && stage==='ENDING_DELAY' ? 'border-red-500/40 text-red-100 shadow-[0_0_15px_rgba(220,38,38,0.3)]' : 'border-pink-300/10 text-pink-50'} animate-kurumi-bubble`
+                          : `bg-[#1e293b]/40 rounded-2xl rounded-bl-sm border ${mood === 0 && stage==='ENDING_DELAY' ? 'border-red-500/40 text-red-100 shadow-[0_0_15px_rgba(220,38,38,0.3)]' : 'bo[...]
                       }`}>
                         {msg.text}
                       </div>
@@ -520,7 +520,7 @@
                       </button>
                     )}
                   </form>
-                  <button disabled={stage === 'ENDING_DELAY'} className="w-12 h-12 flex items-center justify-center rounded-full bg-[#0f172a]/70 backdrop-blur-xl border border-pink-300/20 shadow-xl hover:bg-pink-500/10 active:scale-95 transition-all disabled:opacity-50 z-50">
+                  <button disabled={stage === 'ENDING_DELAY'} className="w-12 h-12 flex items-center justify-center rounded-full bg-[#0f172a]/70 backdrop-blur-xl border border-pink-300/20 shadow-[...]
                     <Gift className={`w-6 h-6 ${stage === 'ENDING_DELAY' ? 'text-slate-500' : 'text-pink-200'}`} />
                   </button>
                 </footer>
