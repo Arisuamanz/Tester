@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Video Latar Belakang</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Memastikan bekas iframe video memenuhi skrin secara penuh dan tidak boleh diklik */
+        .video-background {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* Membolehkan klik menembusi video ke lapisan game */
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* Sekiranya nisbah skrin berbeza, besarkan iframe supaya tiada garis hitam */
+        @media (min-aspect-ratio: 16/9) {
+            .video-background iframe {
+                width: 100vw;
+                height: 56.25vw; /* 100 * 9 / 16 */
+            }
+        }
+        @media (max-aspect-ratio: 16/9) {
+            .video-background iframe {
+                width: 177.78vh; /* 100 * 16 / 9 */
+                height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white m-0 p-0 overflow-hidden min-h-screen flex items-center justify-center font-sans select-none">
+
+    <!-- 1. LAPISAN LATAR BELAKANG VIDEO YOUTUBE -->
+    <div class="video-background">
+        <!-- Player Iframe akan dimasukkan di sini menerusi JavaScript -->
+        <div id="youtube-bg-player" class="w-full h-full"></div>
+    </div>
+
+    <!-- Lapisan Gelap (Overlay) untuk Menjadikan Elemen Permainan Lebih Jelas -->
+    <div class="fixed inset-0 bg-black/40 z-10 pointer-events-none"></div>
+
+    <!-- 2. LAPISAN PERMAINAN (GAME CANVAS & UI) -->
+    <div class="relative z-20 flex flex-col items-center justify-center w-full h-screen">
+        
+        <!-- UI Skor Permainan -->
+        <div id="game-ui" class="absolute top-6 left-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 shadow-xl hidden">
+            <p class="text-sm text-gray-300">Skor Anda:</p>
+            <p id="score-text" class="text-3xl font-extrabold text-emerald-400">0</p>
+        </div>
+
+        <!-- Kanvas Permainan -->
+        <canvas id="gameCanvas" class="border-2 border-white/20 rounded-2xl shadow-2xl bg-transparent hidden max-w-[90vw] max-h-[80vh]"></canvas>
+
+        <!-- Skrin Mula / Menu Permainan -->
+        <div id="start-menu" class="flex flex-col items-center justify-center text-center p-8 bg-black/70 backdrop-blur-lg rounded-3xl border border-white/10 shadow-2xl max-w-md">
+            <h1 class="text-3xl font-black mb-2 bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">
+                PERMAINAN BACKGROUND VIDEO
+            </h1>
+            <p class="text-sm text-gray-300 mb-6">
+                Tekan butang di bawah untuk memulakan permainan. Video YouTube akan terus dimainkan di latar belakang secara skrin penuh!
+            </p>
+            <button onclick="startGame()" class="w-full py-4 px-8 text-lg font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 border border-emerald-400/30 cursor-pointer">
+                🎮 Mula Permainan & Main Video
+            </button>
+        </div>
+
+        <!-- Skrin Tamat (Game Over) -->
+        <div id="game-over-menu" class="flex-col items-center justify-center text-center p-8 bg-black/80 backdrop-blur-lg rounded-3xl border border-red-500/30 shadow-2xl max-w-md hidden">
+            <h2 class="text-3xl font-black mb-2 text-red-500">PERMAINAN TAMAT!</h2>
+            <p class="text-lg text-gray-200 mb-4">Skor Akhir: <span id="final-score" class="font-bold text-emerald-400">0</span></p>
+            <button onclick="restartGame()" class="w-full py-4 px-8 text-lg font-bold text-white bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 border border-red-400/30 cursor-pointer">
+                🔄 Main Semula
+            </button>
+        </div>
+    </div>
+
+    <!-- API Iframe YouTube -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // --- 1. SKRIP PENGURUSAN VIDEO LATAR BELAKANG ---
+        let ytPlayer;
+        const videoId = 'wMONY5W8sZQ'; // ID Video yang diminta
+
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-bg-player', {
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,        // Sembunyikan semua kawalan YouTube
+                    'disablekb': 1,       // Matikan kawalan papan kekunci YT
+                    'showinfo': 0,        // Sembunyikan tajuk video
+                    'modestbranding': 1,  // Sembunyikan logo besar YT
+                    'loop': 1,            // Ulang video
+                    'playlist': videoId,  // Diperlukan untuk fungsi loop YT
+                    'fs': 0,              // Sembunyikan butang fullscreen YT
+                    'cc_load_policy': 0,  // Matikan sari kata
+                    'iv_load_policy': 3,  // Sembunyikan annotasi
+                    'autohide': 1,
+                    'playsinline': 1,
+                    'mute': 1             // Mute automatik supaya autoplay diluluskan pelayar
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.mute();
+            event.target.playVideo();
+        }
+
+        // --- 2. LOGIK PERMAINAN RINGKAS (DODGE THE BALL GAME) ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let gameAnimationId;
+        let score = 0;
+        let isGameOver = false;
+
+        // Saiz Kanvas
+        canvas.width = 400;
+        canvas.height = 500;
+
+        // Pemain
+        const player = {
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 60,
+            width: 40,
+            height: 40,
+            speed: 7,
+            dx: 0
+        };
+
+        // Halangan (Obstacles)
+        let obstacles = [];
+
+        function createObstacle() {
+            const size = Math.random() * 30 + 20;
+            obstacles.push({
+                x: Math.random() * (canvas.width - size),
+                y: -size,
+                width: size,
+                height: size,
+                speed: Math.random() * 3 + 3
+            });
+        }
+
+        function drawPlayer() {
+            ctx.fillStyle = '#10B981'; // Warna Hijau Neon
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#10B981';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.shadowBlur = 0; // Reset kesan kilau
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = '#EF4444'; // Warna Merah
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#EF4444';
+            obstacles.forEach(obs => {
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function updateGame() {
+            if (isGameOver) return;
+
+            // Bersihkan kanvas (kekalkan ketelusan supaya latar video kelihatan!)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Pergerakan Pemain
+            player.x += player.dx;
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+            drawPlayer();
+
+            // Kemaskini Halangan
+            if (Math.random() < 0.05) createObstacle();
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.y += obs.speed;
+
+                // Pengesanan Pelanggaran (Collision Detection)
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y
+                ) {
+                    endGame();
+                    return;
+                }
+
+                // Tambah skor jika halangan lepas ke bawah
+                if (obs.y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    score += 10;
+                    document.getElementById('score-text').innerText = score;
+                    i--;
+                }
+            }
+
+            drawObstacles();
+            gameAnimationId = requestAnimationFrame(updateGame);
+        }
+
+        // --- 3. KAWALAN PERMAINAN ---
+        function handleKeyDown(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'a') player.dx = -player.speed;
+            if (e.key === 'ArrowRight' || e.key === 'd') player.dx = player.speed;
+        }
+
+        function handleKeyUp(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'a' || e.key === 'd') {
+                player.dx = 0;
+            }
+        }
+
+        // Kawalan Sentuhan Skrin (Mobile Touch)
+        canvas.addEventListener('touchstart', (e) => {
+            const touchX = e.touches[0].clientX;
+            const canvasRect = canvas.getBoundingClientRect();
+            if (touchX < canvasRect.left + canvasRect.width / 2) {
+                player.dx = -player.speed;
+            } else {
+                player.dx = player.speed;
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            player.dx = 0;
+        });
+
+        // --- 4. KAWALAN MENU & ALIRAN PERMAINAN ---
+        function startGame() {
+            document.getElementById('start-menu').classList.add('hidden');
+            document.getElementById('gameCanvas').classList.remove('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+
+            // Pastikan video dimainkan dengan audio diaktifkan jika dimahukan
+            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.playVideo();
+                ytPlayer.unMute(); // Nyah-senyap audio jika pengguna memulakan permainan
+            }
+
+            // Meminta mod skrin penuh automatik bagi peranti
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
+
+            resetVariables();
+            updateGame();
+        }
+
+        function endGame() {
+            isGameOver = true;
+            cancelAnimationFrame(gameAnimationId);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over-menu').classList.remove('hidden');
+            document.getElementById('game-over-menu').classList.add('flex');
+        }
+
+        function restartGame() {
+            document.getElementById('game-over-menu').classList.add('hidden');
+            document.getElementById('game-over-menu').classList.remove('flex');
+            resetVariables();
+            updateGame();
+        }
+
+        function resetVariables() {
+            score = 0;
+            isGameOver = false;
+            obstacles = [];
+            player.x = canvas.width / 2 - 20;
+            document.getElementById('score-text').innerText = score;
+        }
+    </script>
+</body>
+</html>
