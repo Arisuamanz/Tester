@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Permainan Video Latar Belakang - Pro</title>
+    <title>Game Tembak Susu - Redesign</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12,364 +12,428 @@
             padding: 0;
             overflow: hidden;
             background-color: #000;
+            touch-action: none; /* Halang scroll ketika bermain */
         }
 
-        /* --- STYLING VIDEO BACKGROUND YANG DIPERBAIKI --- */
+        /* --- VIDEO BACKGROUND --- */
         .video-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 1; /* Lapisan Paling Bawah */
-            pointer-events: none; /* Klik tembus ke game */
+            z-index: 1; 
+            pointer-events: none; 
             overflow: hidden;
         }
 
-        /* Trik CSS untuk memastikan iframe YouTube memenuhi skrin (stretch/fill) */
         .video-container iframe {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 100vw;
-            height: 100vh;
-            transform: translate(-50%, -50%);
-            /* Memaksa skala iframe membesar untuk membuang bar hitam tepi */
-            min-width: 100%;
-            min-height: 100%;
-            /* Guna nisbah aspek 16:9 sebagai panduan minima */
             width: max(100vw, 177.78vh); 
             height: max(100vh, 56.25vw);
-            object-fit: cover;
-        }
-
-        /* --- STYLING LAPISAN PERMAINAN --- */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.4); /* Gelapkan sikit video untuk nampak game */
-            z-index: 2; /* Atas video */
+            transform: translate(-50%, -50%);
             pointer-events: none;
         }
 
-        .game-layer {
+        /* --- OVERLAY SANGAT NIPIS (Hanya untuk timbulkan susu putih) --- */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.15); /* 15% gelap sahaja */
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* --- KANVAS GAME BORDERLESS --- */
+        canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 10; /* Atas segalanya */
+            z-index: 10;
+            display: block; /* Buang jarak bawah default */
+        }
+
+        /* --- UI TANPA BINGKAI (TEXT ONLY) --- */
+        .ui-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            pointer-events: none; /* Biar klik tembus ke canvas */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        #gameCanvas {
-            background-color: transparent;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-            /* Sempadan kaca */
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(2px);
+        /* Teks dengan bayang-bayang supaya nampak jelas tanpa kotak */
+        .text-shadow-glow {
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3);
+        }
+        
+        .pointer-events-auto {
+            pointer-events: auto;
         }
     </style>
 </head>
 <body class="text-white select-none font-sans">
 
-    <!-- 1. LATAR BELAKANG VIDEO YOUTUBE -->
-    <div class="video-container" id="video-wrapper">
+    <!-- 1. VIDEO YOUTUBE LATAR -->
+    <div class="video-container">
         <div id="youtube-player"></div>
     </div>
-
-    <!-- 2. OVERLAY (Kesan Gelap) -->
     <div class="overlay"></div>
 
-    <!-- 3. LAPISAN PERMAINAN (UI & CANVAS) -->
-    <div class="game-layer">
+    <!-- 2. KANVAS SKRIN PENUH -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 3. UI TANPA KOTAK (Bebas halangan visual) -->
+    <div class="ui-layer">
         
-        <!-- UI Skor Semasa Bermain -->
-        <div id="ui-score" class="absolute top-8 left-8 hidden bg-black/50 p-4 rounded-xl backdrop-blur-sm border border-white/10">
-            <p class="text-xs text-gray-300 font-bold tracking-wider uppercase">Markah</p>
-            <p id="score-display" class="text-4xl font-black text-emerald-400">0</p>
+        <!-- Skor (Kiri Atas) -->
+        <div id="score-ui" class="absolute top-6 left-6 hidden text-left">
+            <p class="text-[12px] font-bold tracking-widest uppercase text-white/80 text-shadow-glow">Skor Cecair</p>
+            <p id="score-display" class="text-5xl font-black text-white text-shadow-glow mt-[-5px]">0</p>
         </div>
 
-        <!-- Kanvas Game -->
-        <canvas id="gameCanvas" class="hidden w-[90vw] h-[70vh] max-w-[400px] max-h-[600px]"></canvas>
-
-        <!-- Menu Utama (Mula) -->
-        <div id="menu-start" class="flex flex-col items-center bg-black/80 p-8 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl text-center max-w-sm w-[90%]">
-            <h1 class="text-3xl font-black mb-2 bg-gradient-to-r from-emerald-400 to-cyan-400 text-transparent bg-clip-text">NEON DODGE</h1>
-            <p class="text-sm text-gray-400 mb-8">Elak kotak merah jambu! Video akan dimainkan di latar belakang.</p>
+        <!-- Menu Mula -->
+        <div id="menu-start" class="flex flex-col items-center pointer-events-auto text-center mt-[-10vh]">
+            <h1 class="text-5xl md:text-7xl font-black mb-2 text-white text-shadow-glow uppercase tracking-tighter">Splash<br><span class="text-blue-300">Susu</span></h1>
+            <p class="text-lg text-white/90 mb-10 text-shadow-glow font-medium">Tap skrin untuk tembak susu ke biskut!</p>
             
-            <button onclick="startGame()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-full transition-transform active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
-                ▶ MULA & MAIN VIDEO
+            <button onclick="startGame()" class="px-10 py-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xl font-black rounded-full transition-all active:scale-90 border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.3)] cursor-pointer uppercase tracking-widest">
+                Main Sekarang
             </button>
-            <p id="loading-msg" class="text-xs text-yellow-400 mt-4 hidden">Memuatkan Pemain Video...</p>
+            <p id="loading-msg" class="text-sm text-yellow-300 mt-4 hidden text-shadow-glow">Menyambung Video...</p>
         </div>
 
-        <!-- Menu Tamat (Game Over) -->
-        <div id="menu-gameover" class="hidden flex-col items-center bg-black/90 p-8 rounded-3xl border border-red-500/30 backdrop-blur-md shadow-[0_0_30px_rgba(239,68,68,0.3)] text-center max-w-sm w-[90%]">
-            <h2 class="text-3xl font-black text-red-500 mb-2 uppercase">Kecundang!</h2>
-            <p class="text-gray-300 mb-6">Markah Akhir Anda:<br><span id="final-score" class="text-5xl font-black text-white block mt-2">0</span></p>
+        <!-- Menu Game Over -->
+        <div id="menu-gameover" class="hidden flex-col items-center pointer-events-auto text-center">
+            <h2 class="text-5xl md:text-6xl font-black text-red-500 text-shadow-glow uppercase mb-2">Tumpah!</h2>
+            <p class="text-xl text-white/90 text-shadow-glow">Skor Anda:</p>
+            <p id="final-score" class="text-7xl font-black text-white text-shadow-glow mb-10">0</p>
             
-            <button onclick="restartGame()" class="w-full py-4 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-extrabold rounded-full transition-transform active:scale-95 shadow-lg">
-                ↺ CUBA LAGI
+            <button onclick="restartGame()" class="px-10 py-4 bg-red-500/80 hover:bg-red-500 backdrop-blur-sm text-white text-xl font-black rounded-full transition-all active:scale-90 shadow-[0_0_30px_rgba(239,68,68,0.5)] cursor-pointer uppercase tracking-widest">
+                Cuba Lagi
             </button>
-        </div>
-
-        <!-- Kawalan Sentuhan Mudah Alih -->
-        <div id="mobile-controls" class="hidden absolute bottom-8 left-0 w-full flex justify-between px-8 z-50">
-            <button id="btn-left" class="w-20 h-20 bg-white/10 rounded-full border border-white/20 active:bg-white/30 backdrop-blur-sm text-3xl flex items-center justify-center">⬅</button>
-            <button id="btn-right" class="w-20 h-20 bg-white/10 rounded-full border border-white/20 active:bg-white/30 backdrop-blur-sm text-3xl flex items-center justify-center">➡</button>
         </div>
     </div>
 
-    <!-- MUAT TURUN YOUTUBE IFRAME API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
         // ==========================================
-        // 1. PENGURUSAN YOUTUBE IFRAME API
+        // 1. PENGURUSAN VIDEO YOUTUBE
         // ==========================================
-        let player;
+        let ytPlayer;
         let isVideoReady = false;
-        const videoId = 'wMONY5W8sZQ'; // ID Video yang diminta
+        const videoId = 'wMONY5W8sZQ'; 
 
         function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtube-player', {
+            ytPlayer = new YT.Player('youtube-player', {
                 videoId: videoId,
                 playerVars: {
-                    'autoplay': 0,        // Jangan auto-play dulu, tunggu klik
-                    'controls': 0,        // Buang butang pause/play
-                    'disablekb': 1,       // Buang kawalan keyboard YT
-                    'fs': 0,              // Tiada fullscreen butang
-                    'rel': 0,             // Tiada video berkaitan
-                    'showinfo': 0,        // Tiada tajuk
-                    'modestbranding': 1,  // Tiada logo
-                    'playsinline': 1,     // Penting untuk mobile ios
-                    'loop': 1,
-                    'playlist': videoId   // Wajib ada untuk loop
+                    'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 
+                    'showinfo': 0, 'modestbranding': 1, 'playsinline': 1, 'loop': 1,
+                    'playlist': videoId, 'vq': 'hd1080'
                 },
                 events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
+                    'onReady': () => { isVideoReady = true; },
+                    'onStateChange': (e) => { if (e.data === YT.PlayerState.ENDED) ytPlayer.playVideo(); }
                 }
             });
         }
 
-        function onPlayerReady(event) {
-            isVideoReady = true;
-            console.log("YouTube API Sedia");
-        }
-
-        function onPlayerStateChange(event) {
-            // Jika video tamat (walaupun loop), cuba paksa main semula
-            if (event.data === YT.PlayerState.ENDED) {
-                player.playVideo();
-            }
-        }
-
         // ==========================================
-        // 2. ENJIN PERMAINAN HTML5 CANVAS
+        // 2. ENJIN KANVAS & KESAN VISUAL (FLUID/CECAIR)
         // ==========================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        let gameLoop;
+        let gameLoopId;
+        
         let score = 0;
         let gameActive = false;
-        let difficultyMultiplier = 1;
+        let frameCount = 0;
 
-        // Tetapkan saiz rasmi kanvas dalaman
-        canvas.width = 400;
-        canvas.height = 600;
+        // Jadikan canvas sepenuh skrin
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        // Objek Pemain
-        const hero = {
-            x: canvas.width / 2 - 20,
-            y: canvas.height - 70,
-            w: 40,
-            h: 40,
-            speed: 8,
-            dx: 0,
-            color: '#10B981' // Emerald
+        // --- ENTIITI PERMAINAN ---
+        
+        // Pemain (Muncung Tembakan di bawah)
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 40,
+            targetX: canvas.width / 2,
+            radius: 20
         };
 
-        let enemies = [];
-        let particles = [];
+        let milkDrops = [];
+        let cookies = [];
+        let splashes = []; // Kesan susu pecah (Cecair)
 
-        // Fungsi melukis pemain
-        function drawHero() {
-            ctx.fillStyle = hero.color;
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = hero.color;
+        // --- FUNGSI LUKISAN ---
+        
+        function drawPlayer() {
+            // Pergerakan lancar (Smooth lerp) mengikut jari/mouse
+            player.x += (player.targetX - player.x) * 0.2;
+
+            // Lukis pemain sebagai muncung/meriam bulat biru cair/putih
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#93c5fd'; // Biru lembut
             ctx.beginPath();
-            ctx.roundRect(hero.x, hero.y, hero.w, hero.h, 8); // Kotak bucu bulat
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Detail muncung
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y - 10, 8, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
         }
 
-        // Fungsi mencipta musuh
-        function spawnEnemy() {
-            let size = Math.random() * 30 + 20;
-            let xPos = Math.random() * (canvas.width - size);
-            enemies.push({
-                x: xPos,
-                y: -size,
-                w: size,
-                h: size,
-                speed: (Math.random() * 3 + 3) * difficultyMultiplier,
-                color: '#EC4899' // Pink/Magenta
-            });
-        }
-
-        // Fungsi melukis musuh
-        function drawEnemies() {
-            enemies.forEach(e => {
-                ctx.fillStyle = e.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = e.color;
+        function drawMilkDrops() {
+            // Peluru berbentuk titisan susu memanjang
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            
+            milkDrops.forEach(drop => {
                 ctx.beginPath();
-                ctx.moveTo(e.x + e.w/2, e.y);
-                ctx.lineTo(e.x + e.w, e.y + e.h);
-                ctx.lineTo(e.x, e.y + e.h);
-                ctx.fill(); // Bentuk Segitiga
-                ctx.shadowBlur = 0;
+                // Bentuk bujur (titisan cecair)
+                ctx.ellipse(drop.x, drop.y, drop.width, drop.height, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function drawCookies() {
+            cookies.forEach(cookie => {
+                // Biskut asas
+                ctx.fillStyle = '#8B4513'; // Warna Coklat
+                ctx.beginPath();
+                ctx.arc(cookie.x, cookie.y, cookie.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cip Coklat (Kesan tekstur)
+                ctx.fillStyle = '#3E2723'; // Coklat gelap
+                ctx.beginPath();
+                ctx.arc(cookie.x - cookie.radius*0.3, cookie.y - cookie.radius*0.2, cookie.radius*0.2, 0, Math.PI * 2);
+                ctx.arc(cookie.x + cookie.radius*0.4, cookie.y + cookie.radius*0.1, cookie.radius*0.15, 0, Math.PI * 2);
+                ctx.arc(cookie.x - cookie.radius*0.1, cookie.y + cookie.radius*0.4, cookie.radius*0.25, 0, Math.PI * 2);
+                ctx.fill();
             });
         }
 
-        // Kitaran Utama Game
+        function drawSplashes() {
+            // Visual cecair pecah yang terkesan dengan graviti
+            splashes.forEach(s => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        // --- MEKANIK TEMBAKAN & KESAN CECAIR ---
+        
+        function shootMilk() {
+            milkDrops.push({
+                x: player.x,
+                y: player.y - 20,
+                width: 6,
+                height: 18, // Bentuk memanjang macam pancutan
+                speed: 15
+            });
+        }
+
+        function createMilkSplash(x, y, amount) {
+            for(let i=0; i<amount; i++) {
+                splashes.push({
+                    x: x, 
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10, // Pecahan rawak kiri/kanan
+                    vy: (Math.random() - 1) * 8,    // Pecahan ke atas sikit
+                    radius: Math.random() * 6 + 2,  // Saiz cecair berbeza
+                    alpha: 1,
+                    gravity: 0.4                    // Efek cecair jatuh
+                });
+            }
+        }
+
+        function spawnCookie() {
+            let r = Math.random() * 20 + 20; // Jejari biskut (20 - 40)
+            cookies.push({
+                x: Math.random() * (canvas.width - r * 2) + r,
+                y: -r,
+                radius: r,
+                speed: Math.random() * 2.5 + 2 // Kelajuan jatuh
+            });
+        }
+
+        // --- KITARAN UTAMA (GAME LOOP) ---
+        
         function update() {
             if (!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Bersihkan tanpa latar!
+            frameCount++;
 
-            // Clear frame sebelumnya
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 1. UPDATE PEMAIN
+            drawPlayer();
 
-            // Gerakkan Pemain
-            hero.x += hero.dx;
-            
-            // Halang pemain keluar skrin
-            if (hero.x < 0) hero.x = 0;
-            if (hero.x + hero.w > canvas.width) hero.x = canvas.width - hero.w;
-
-            drawHero();
-
-            // Tambah musuh secara rawak
-            if (Math.random() < 0.04 * difficultyMultiplier) {
-                spawnEnemy();
+            // 2. UPDATE PELURU SUSU
+            for (let i = 0; i < milkDrops.length; i++) {
+                let drop = milkDrops[i];
+                drop.y -= drop.speed;
+                // Susu jadi makin panjang bila laju
+                drop.height = Math.min(drop.height + 0.5, 30); 
+                
+                if (drop.y < -50) {
+                    milkDrops.splice(i, 1);
+                    i--;
+                }
             }
+            drawMilkDrops();
 
-            // Gerakkan dan urus musuh
-            for (let i = 0; i < enemies.length; i++) {
-                let e = enemies[i];
-                e.y += e.speed;
+            // 3. MUNCUL BISKUT (Musuh)
+            // Makin lama main, makin cepat biskut keluar
+            let spawnRate = Math.max(20, 60 - Math.floor(score / 50)); 
+            if (frameCount % spawnRate === 0) spawnCookie();
 
-                // Pelanggaran (Collision)
-                if (
-                    hero.x < e.x + e.w &&
-                    hero.x + hero.w > e.x &&
-                    hero.y < e.y + e.h &&
-                    hero.y + hero.h > e.y
-                ) {
+            // 4. UPDATE BISKUT & COLLISION (Bulat bertemu bulat)
+            for (let i = 0; i < cookies.length; i++) {
+                let c = cookies[i];
+                c.y += c.speed;
+
+                // Cek Pelanggaran Biskut dengan Pemain (GAME OVER)
+                let distToPlayer = Math.hypot(player.x - c.x, player.y - c.y);
+                if (distToPlayer < player.radius + c.radius - 5) {
                     gameOver();
                     return;
                 }
 
-                // Kira Markah jika musuh melepasi bawah skrin
-                if (e.y > canvas.height) {
-                    score += 10;
-                    document.getElementById('score-display').innerText = score;
-                    enemies.splice(i, 1);
-                    i--;
+                // Cek Pelanggaran Susu dengan Biskut
+                let hit = false;
+                for (let j = 0; j < milkDrops.length; j++) {
+                    let drop = milkDrops[j];
+                    let distToDrop = Math.hypot(drop.x - c.x, drop.y - c.y);
                     
-                    // Tingkatkan kesukaran sedikit demi sedikit
-                    if (score % 100 === 0) difficultyMultiplier += 0.1;
+                    if (distToDrop < c.radius + drop.height/2) {
+                        // KENA!
+                        createMilkSplash(c.x, c.y, 15); // Hasilkan letupan cecair
+                        score += 10;
+                        document.getElementById('score-display').innerText = score;
+                        
+                        milkDrops.splice(j, 1); // Buang peluru susu
+                        hit = true;
+                        break;
+                    }
+                }
+
+                // Buang biskut jika kena tembak atau terkeluar skrin
+                if (hit || c.y > canvas.height + c.radius) {
+                    cookies.splice(i, 1);
+                    i--;
                 }
             }
+            drawCookies();
 
-            drawEnemies();
-            gameLoop = requestAnimationFrame(update);
+            // 5. UPDATE SPLASH (CECAIR PECAH)
+            for (let i = 0; i < splashes.length; i++) {
+                let s = splashes[i];
+                s.vy += s.gravity; // Tarikan graviti (jatuh)
+                s.x += s.vx;
+                s.y += s.vy;
+                s.radius *= 0.95; // Makin mengecil (menyejat)
+                s.alpha -= 0.03;  // Makin pudar
+                
+                if (s.alpha <= 0.1 || s.radius <= 0.5) {
+                    splashes.splice(i, 1);
+                    i--;
+                }
+            }
+            drawSplashes();
+
+            gameLoopId = requestAnimationFrame(update);
         }
 
         // ==========================================
-        // 3. KAWALAN PEMAIN (KEYBOARD & TOUCH)
+        // 3. KAWALAN SENTUHAN (TAP / MOUSE)
         // ==========================================
         
-        // Keyboard (PC)
-        window.addEventListener('keydown', (e) => {
-            if(e.key === 'ArrowLeft' || e.key === 'a') hero.dx = -hero.speed;
-            if(e.key === 'ArrowRight' || e.key === 'd') hero.dx = hero.speed;
+        function handleInput(e) {
+            if (!gameActive) return;
+            e.preventDefault(); // Halang scroll/zoom di mobile
+            
+            // Dapatkan koordinat X (Touch atau Mouse)
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            // Gerakkan pemain ke koordinat jari/mouse
+            player.targetX = clientX;
+            
+            // Tembak susu setiap kali tap/klik!
+            shootMilk();
+        }
+
+        function handleMove(e) {
+            if (!gameActive) return;
+            e.preventDefault();
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            player.targetX = clientX; // Pemain ikut jari tanpa menembak
+        }
+
+        // Daftar event listener untuk Canvas (Bebas Kawalan)
+        canvas.addEventListener('touchstart', handleInput, {passive: false});
+        canvas.addEventListener('touchmove', handleMove, {passive: false});
+        
+        canvas.addEventListener('mousedown', handleInput);
+        canvas.addEventListener('mousemove', (e) => {
+            if(e.buttons > 0) handleMove(e); // Hanya ikut kalau sedang klik hold (drag)
         });
-        window.addEventListener('keyup', (e) => {
-            if(['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) hero.dx = 0;
-        });
-
-        // Butang Sentuh (Mobile)
-        const btnL = document.getElementById('btn-left');
-        const btnR = document.getElementById('btn-right');
-
-        // Guna touchstart/end supaya lebih responsif di mobile
-        btnL.addEventListener('touchstart', (e) => { e.preventDefault(); hero.dx = -hero.speed; });
-        btnL.addEventListener('touchend', (e) => { e.preventDefault(); hero.dx = 0; });
-        btnL.addEventListener('mousedown', () => hero.dx = -hero.speed);
-        btnL.addEventListener('mouseup', () => hero.dx = 0);
-        btnL.addEventListener('mouseleave', () => hero.dx = 0);
-
-        btnR.addEventListener('touchstart', (e) => { e.preventDefault(); hero.dx = hero.speed; });
-        btnR.addEventListener('touchend', (e) => { e.preventDefault(); hero.dx = 0; });
-        btnR.addEventListener('mousedown', () => hero.dx = hero.speed);
-        btnR.addEventListener('mouseup', () => hero.dx = 0);
-        btnR.addEventListener('mouseleave', () => hero.dx = 0);
-
 
         // ==========================================
-        // 4. KAWALAN MENU & INTEGRASI VIDEO
+        // 4. KAWALAN MENU
         // ==========================================
         function startGame() {
             if (!isVideoReady) {
                 document.getElementById('loading-msg').classList.remove('hidden');
-                setTimeout(startGame, 500); // Cuba lagi dalam 0.5s
+                setTimeout(startGame, 500);
                 return;
             }
 
-            // Minta Fullscreen untuk peranti (Pilihan)
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch((err)=>{console.log("Fullscreen dihalang")});
+            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.unMute(); 
+                ytPlayer.playVideo();
             }
 
-            // Mula mainkan video YouTube
-            if (player && typeof player.playVideo === 'function') {
-                player.unMute(); // Buka bunyi jika mahu
-                player.playVideo();
-            }
-
-            // Kemas kini UI Menu
+            // Sembunyikan Menu
             document.getElementById('menu-start').classList.add('hidden');
-            document.getElementById('gameCanvas').classList.remove('hidden');
-            document.getElementById('ui-score').classList.remove('hidden');
-            
-            // Paparkan kawalan mobile jika peranti skrin sentuh
-            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-                document.getElementById('mobile-controls').classList.remove('hidden');
-            }
+            document.getElementById('score-ui').classList.remove('hidden');
 
-            // Reset status game
             resetGame();
             gameActive = true;
+            resizeCanvas(); // Pastikan saiz penuh sebelum mula
             update();
         }
 
         function gameOver() {
             gameActive = false;
-            cancelAnimationFrame(gameLoop);
+            cancelAnimationFrame(gameLoopId);
             
-            // Kemas kini UI Game Over
-            document.getElementById('gameCanvas').classList.add('hidden');
-            document.getElementById('ui-score').classList.add('hidden');
-            document.getElementById('mobile-controls').classList.add('hidden');
+            document.getElementById('score-ui').classList.add('hidden');
             
             document.getElementById('final-score').innerText = score;
             document.getElementById('menu-gameover').classList.remove('hidden');
@@ -379,12 +443,7 @@
         function restartGame() {
             document.getElementById('menu-gameover').classList.add('hidden');
             document.getElementById('menu-gameover').classList.remove('flex');
-            
-            document.getElementById('gameCanvas').classList.remove('hidden');
-            document.getElementById('ui-score').classList.remove('hidden');
-            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-                document.getElementById('mobile-controls').classList.remove('hidden');
-            }
+            document.getElementById('score-ui').classList.remove('hidden');
 
             resetGame();
             gameActive = true;
@@ -393,13 +452,14 @@
 
         function resetGame() {
             score = 0;
-            difficultyMultiplier = 1;
-            enemies = [];
-            hero.x = canvas.width / 2 - 20;
-            hero.dx = 0;
+            frameCount = 0;
+            milkDrops = [];
+            cookies = [];
+            splashes = [];
+            player.x = canvas.width / 2;
+            player.targetX = canvas.width / 2;
             document.getElementById('score-display').innerText = score;
         }
-
     </script>
 </body>
 </html>
