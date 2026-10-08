@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,16 +23,17 @@
             font-family: 'Cinzel', serif;
         }
 
-        /* Seamless Fullscreen Video Layer with Top Crop (10% Zoom Outward at Top) */
+        /* Seamless Fullscreen Video Layer - Shifted up 10% */
         .video-layer {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100vw;
-            height: 110vh; /* Pushes past the top boundary by 10% */
+            height: 100vh;
             overflow: hidden;
             z-index: 10;
             background-color: #000;
+            transform: translateY(-10%);
         }
 
         .video-layer video, #ytPlayerContainer iframe {
@@ -119,7 +119,7 @@
 
     <!-- PHASE 1: STORY DIALOGUE SCREEN -->
     <div id="storyScreen" class="absolute inset-0 z-30 flex flex-col justify-end bg-cover bg-center bg-no-repeat cursor-pointer transition-opacity duration-700" 
-         style="background-image: url('https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg');">
+         style="background-image: url('https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg'); transform: translateY(-10%);">
         
         <!-- Subtle gradient for text readability -->
         <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none"></div>
@@ -178,7 +178,7 @@
             
             <!-- Glowing Target Labels floating cleanly over video -->
             <div class="absolute left-4 text-red-500 font-title font-black tracking-widest text-lg md:text-xl text-shadow-glow-red flex items-center gap-1">
-                <svg class="w-5 h-5 fill-red-500 animate-pulse" viewBox="0 0 24 24"><path d="M12 23c-4.97 0-9-3.58-9-8 0-4.19 3.48-8.22 6.54-11.28.39-.39 1.02-.39 1.41 0C12.36 5.12 18 9.57 18 15c0 4.42-2.69 8-6 8zm0-18.17C9.37 7.66 5 11.23 5 15c0 3.31 3.13 6 7 6s5-2.69 5-6c0-3.11-2.91-6.19-5-7.17z"/></svg>
+                <svg class="w-5 h-5 fill-red-500 animate-pulse" viewBox="0 0 24 24"><path d="M12 23c-4.97 0-9-3.58-9-8 0-4.19 3.48-8.22 6.54-11.28.39-.39 1.02-.39 1.41 0C12.36 5.12 18 9.57 18 15c0 4.42-3.58 8-8 8z"/></svg>
                 FIRE
             </div>
             
@@ -200,7 +200,7 @@
                     <!-- Inner Elemental Emblem Icon -->
                     <div id="thumb-icon" class="transform -rotate-45 transition-transform duration-200">
                         <svg id="icon-neutral" class="w-5 h-5 fill-gray-800" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
-                        <svg id="icon-fire" class="w-6 h-6 fill-amber-100 hidden" viewBox="0 0 24 24"><path d="M13.5 12.09c-.38.25-.83.51-1.3.75-1.55.79-3.2 1.16-4.7 1.16-1.9 0-3.5-.6-4.5-1.7-.5-.5-.8-1.2-1-2-.2-.8-.1-1.6.2-2.3C2.8 6.8 4 5.7 5.5 5c.4-.2.8-.3 1.2-.4C7.8 4.2 9 4 10.2 4c.6 0 1.2.1 1.8.2.6.2 1.1.4 1.5.7l-1.4 2.4c-.2-.1-.5-.2-.8-.3-.4-.1-.8-.1-1.3-.1-.9 0-1.8.2-2.5.6-.7.4-1.2.9-1.5 1.5-.2.4-.3.8-.2 1.2.1.4.3.7.6 1 .5.5 1.3.8 2.2.8.9 0 1.9-.2 2.9-.7.4-.2.8-.4 1.1-.6l1.3 2.1zM17.5 2C15 2 13 4 13 6.5c0 1.2.5 2.3 1.2 3.1L12 12l2.2 2.2c-.8.7-1.2 1.8-1.2 3 0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5c0-1.2-.5-2.3-1.2-3.1L23 12l-2.2-2.2c.8-.7 1.2-1.8 1.2-3C22 4 20 2 17.5 2z"/></svg>
+                        <svg id="icon-fire" class="w-6 h-6 fill-amber-100 hidden" viewBox="0 0 24 24"><path d="M13.5 12.09c-.38.25-.83.51-1.3.75-1.55.79-3.2 1.16-4.7 1.16-1.9 0-3.5-.6-4.5-1.7-.5-.5-.8-1.1-.8-1.7 0-1.3 1.28-2.5 2.88-2.5.85 0 1.6.3 2.2.78.33.28.63.6.87.96.13.19.27.36.42.51.15.15.3.28.45.4.36.27.77.4 1.2.4.56 0 1.08-.2 1.5-.56l-.05-.05c-.56-.57-1.3-.9-2.1-.9-1.44 0-2.65 1.1-2.65 2.5 0 1.05.58 1.95 1.42 2.37.36.18.76.28 1.18.28 1.12 0 2.1-.56 2.73-1.4.24-.32.45-.68.6-1.07.2-.52.35-1.1.38-1.71.03-.65-.08-1.27-.33-1.85z"/></svg>
                         <svg id="icon-electric" class="w-6 h-6 fill-white hidden" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14v-8z"/></svg>
                     </div>
                 </div>
