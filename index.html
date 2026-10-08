@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +16,7 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
-            touch-action: none; /* Prevent browser refreshing on swipe */
+            touch-action: none; /* Prevent browser swipe gestures */
             user-select: none;
         }
 
@@ -24,13 +24,13 @@
             font-family: 'Cinzel', serif;
         }
 
-        /* Seamless Fullscreen Video Layer with Top Crop */
+        /* Seamless Fullscreen Video Layer with Top Crop (10% Zoom Outward at Top) */
         .video-layer {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100vw;
-            height: 110vh; /* Zooms 10% outwards pushing past the top boundary */
+            height: 110vh; /* Pushes past the top boundary by 10% */
             overflow: hidden;
             z-index: 10;
             background-color: #000;
@@ -42,17 +42,17 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: fill; /* Maintains left/right/bottom tight fill */
+            object-fit: fill;
             border: none;
             outline: none;
-            pointer-events: none; /* Prevents user interacting with YouTube/Video UI */
+            pointer-events: none;
         }
 
         /* Clean transparent dialog */
         .transparent-dialog {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
 
         /* Subtle pulsing text for tap indicator */
@@ -64,6 +64,43 @@
             animation: pulse-soft 2s infinite ease-in-out;
         }
 
+        /* Dynamic Flame & Electric FX Animations for Slider Diamond */
+        @keyframes fire-flare {
+            0%, 100% { 
+                transform: rotate(45deg) scale(1.05); 
+                box-shadow: 0 0 25px #ef4444, 0 0 50px #f97316, 0 0 80px #dc2626, inset 0 0 15px #fde047;
+            }
+            50% { 
+                transform: rotate(45deg) scale(1.22); 
+                box-shadow: 0 0 40px #dc2626, 0 0 75px #ea580c, 0 0 110px #b91c1c, inset 0 0 25px #ffffff;
+            }
+        }
+
+        @keyframes electric-zap {
+            0%, 100% { 
+                transform: rotate(45deg) scale(1.05) translate(0, 0); 
+                box-shadow: 0 0 25px #06b6d4, 0 0 50px #3b82f6, 0 0 80px #0284c7, inset 0 0 15px #e0f2fe;
+            }
+            25% { transform: rotate(45deg) scale(1.15) translate(-1px, 1px); }
+            50% { 
+                transform: rotate(45deg) scale(1.25) translate(1px, -1px); 
+                box-shadow: 0 0 40px #0284c7, 0 0 75px #2563eb, 0 0 110px #1d4ed8, inset 0 0 25px #ffffff;
+            }
+            75% { transform: rotate(45deg) scale(1.15) translate(-1px, -1px); }
+        }
+
+        .effect-fire {
+            animation: fire-flare 0.5s infinite ease-in-out !important;
+            background: linear-gradient(135deg, #ef4444, #ea580c, #fde047) !important;
+            border-color: #fef08a !important;
+        }
+
+        .effect-electric {
+            animation: electric-zap 0.35s infinite ease-in-out !important;
+            background: linear-gradient(135deg, #06b6d4, #2563eb, #ffffff) !important;
+            border-color: #e0f2fe !important;
+        }
+
         /* Slider Thumb styling */
         #slider-thumb {
             transition: transform 0.1s;
@@ -73,19 +110,19 @@
         }
 
         /* Redesigned Text Glows */
-        .text-shadow-glow-red { text-shadow: 0 0 12px rgba(239, 68, 68, 1); }
-        .text-shadow-glow-cyan { text-shadow: 0 0 12px rgba(6, 182, 212, 1); }
+        .text-shadow-glow-red { text-shadow: 0 0 16px rgba(239, 68, 68, 1), 0 0 30px rgba(220, 38, 38, 0.8); }
+        .text-shadow-glow-cyan { text-shadow: 0 0 16px rgba(6, 182, 212, 1), 0 0 30px rgba(37, 99, 235, 0.8); }
+        .text-shadow-cinematic { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4); }
     </style>
 </head>
 <body class="relative w-screen h-screen">
 
     <!-- PHASE 1: STORY DIALOGUE SCREEN -->
-    <!-- The entire screen is clickable to advance the story -->
     <div id="storyScreen" class="absolute inset-0 z-30 flex flex-col justify-end bg-cover bg-center bg-no-repeat cursor-pointer transition-opacity duration-700" 
          style="background-image: url('https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg');">
         
         <!-- Subtle gradient for text readability -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none"></div>
 
         <!-- Transparent Dialog Box (No Borders) -->
         <div class="relative z-10 w-full px-6 pb-12 pt-6 transparent-dialog">
@@ -103,6 +140,18 @@
         </div>
     </div>
 
+    <!-- TRANSITION OVERLAY BETWEEN VIDEO 1.0 & 1.1 -->
+    <div id="transitionScreen" class="absolute inset-0 z-50 hidden flex flex-col items-center justify-center bg-black cursor-pointer transition-opacity duration-700">
+        <div class="px-6 text-center">
+            <h2 class="font-title text-2xl md:text-4xl text-white font-extrabold tracking-[0.25em] uppercase text-shadow-cinematic animate-pulse">
+                And then... I arrived.
+            </h2>
+            <p class="text-xs text-gray-500 tracking-widest uppercase mt-8 animate-pulse-soft">
+                Tap to skip
+            </p>
+        </div>
+    </div>
+
     <!-- PHASE 2: FULLSCREEN VIDEO PLAYER (HTML5 & YT) -->
     <div id="videoScreen" class="absolute inset-0 z-20 hidden bg-black">
         <div class="video-layer">
@@ -115,29 +164,46 @@
             </div>
         </div>
         
-        <!-- Hidden skip instruction, shown only if autoplay is blocked -->
+        <!-- Hidden skip instruction if autoplay is blocked -->
         <div id="playPrompt" class="absolute inset-0 z-30 hidden flex items-center justify-center bg-black/80 cursor-pointer">
             <p class="text-white font-title text-xl tracking-widest animate-pulse-soft">Tap to Start Video</p>
         </div>
     </div>
 
-    <!-- PHASE 3: ELEMENTAL POWER SLIDER OVERLAY -->
+    <!-- PHASE 3: ELEMENTAL POWER SLIDER OVERLAY (No black box, 100% Transparent background) -->
     <div id="powerChoiceScreen" class="absolute inset-x-0 z-40 hidden flex-col items-center pointer-events-none" style="bottom: 20%;">
         
-        <!-- Interactive Drag Slider (Redesigned, No Blur, Solid Shape) -->
-        <div class="relative w-full max-w-md h-16 bg-black border-y-4 border-gray-800 shadow-[0_10px_40px_rgba(0,0,0,1)] flex items-center overflow-visible pointer-events-auto">
+        <!-- Transparent Drag Track Overlay -->
+        <div class="relative w-full max-w-md h-20 flex items-center justify-center overflow-visible pointer-events-auto px-4">
             
-            <!-- Target Labels -->
-            <div class="absolute left-6 text-red-500 font-title font-bold tracking-widest text-shadow-glow-red">FIRE</div>
-            <div class="absolute right-6 text-cyan-500 font-title font-bold tracking-widest text-shadow-glow-cyan">ELECTRIC</div>
+            <!-- Glowing Target Labels floating cleanly over video -->
+            <div class="absolute left-4 text-red-500 font-title font-black tracking-widest text-lg md:text-xl text-shadow-glow-red flex items-center gap-1">
+                <svg class="w-5 h-5 fill-red-500 animate-pulse" viewBox="0 0 24 24"><path d="M12 23c-4.97 0-9-3.58-9-8 0-4.19 3.48-8.22 6.54-11.28.39-.39 1.02-.39 1.41 0C12.36 5.12 18 9.57 18 15c0 4.42-2.69 8-6 8zm0-18.17C9.37 7.66 5 11.23 5 15c0 3.31 3.13 6 7 6s5-2.69 5-6c0-3.11-2.91-6.19-5-7.17z"/></svg>
+                FIRE
+            </div>
             
-            <!-- Center marking -->
-            <div class="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-800 transform -translate-x-1/2"></div>
+            <div class="absolute right-4 text-cyan-400 font-title font-black tracking-widest text-lg md:text-xl text-shadow-glow-cyan flex items-center gap-1">
+                ELECTRIC
+                <svg class="w-5 h-5 fill-cyan-400 animate-pulse" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+            </div>
             
-            <!-- Draggable Thumb Container -->
+            <!-- Central Track Bar Line (No solid black box container) -->
+            <div class="w-full h-1.5 bg-gradient-to-r from-red-600/70 via-gray-400/40 to-cyan-500/70 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.3)]"></div>
+            
+            <!-- Center Neutral Marker -->
+            <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-6 bg-white/60 rounded-full shadow-[0_0_8px_#ffffff]"></div>
+            
+            <!-- Draggable Diamond Thumb Container -->
             <div id="slider-thumb" class="absolute w-16 h-16 flex items-center justify-center cursor-grab snapping" style="left: 50%; transform: translateX(-50%); z-index: 10;">
-                <!-- Redesigned Diamond Shape with Effects -->
-                <div id="thumb-visual" class="w-10 h-10 bg-gray-300 border-2 border-white transform rotate-45 transition-all duration-200 shadow-lg"></div>
+                <!-- Diamond Visual Core with Adaptive Fire / Electric FX -->
+                <div id="thumb-visual" class="w-10 h-10 bg-gray-200 border-2 border-white transform rotate-45 transition-all duration-150 shadow-2xl flex items-center justify-center">
+                    <!-- Inner Elemental Emblem Icon -->
+                    <div id="thumb-icon" class="transform -rotate-45 transition-transform duration-200">
+                        <svg id="icon-neutral" class="w-5 h-5 fill-gray-800" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+                        <svg id="icon-fire" class="w-6 h-6 fill-amber-100 hidden" viewBox="0 0 24 24"><path d="M13.5 12.09c-.38.25-.83.51-1.3.75-1.55.79-3.2 1.16-4.7 1.16-1.9 0-3.5-.6-4.5-1.7-.5-.5-.8-1.2-1-2-.2-.8-.1-1.6.2-2.3C2.8 6.8 4 5.7 5.5 5c.4-.2.8-.3 1.2-.4C7.8 4.2 9 4 10.2 4c.6 0 1.2.1 1.8.2.6.2 1.1.4 1.5.7l-1.4 2.4c-.2-.1-.5-.2-.8-.3-.4-.1-.8-.1-1.3-.1-.9 0-1.8.2-2.5.6-.7.4-1.2.9-1.5 1.5-.2.4-.3.8-.2 1.2.1.4.3.7.6 1 .5.5 1.3.8 2.2.8.9 0 1.9-.2 2.9-.7.4-.2.8-.4 1.1-.6l1.3 2.1zM17.5 2C15 2 13 4 13 6.5c0 1.2.5 2.3 1.2 3.1L12 12l2.2 2.2c-.8.7-1.2 1.8-1.2 3 0 2.5 2 4.5 4.5 4.5s4.5-2 4.5-4.5c0-1.2-.5-2.3-1.2-3.1L23 12l-2.2-2.2c.8-.7 1.2-1.8 1.2-3C22 4 20 2 17.5 2z"/></svg>
+                        <svg id="icon-electric" class="w-6 h-6 fill-white hidden" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14v-8z"/></svg>
+                    </div>
+                </div>
             </div>
             
         </div>
@@ -147,7 +213,7 @@
         // Media Configuration
         const bgImage = 'https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg';
         
-        // Extracted raw .mp4 URLs for perfect fullscreen, borderless playback
+        // Extracted raw .mp4 URLs for borderless playback
         const video1_0 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.0_edoutw.mp4';
         const video1_1 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.1_b4lyr8.mp4';
 
@@ -155,7 +221,7 @@
         const ytFireId = 'F4FEpI-0tzI';
         const ytElectricId = 'VXtbzPW48G0';
 
-        // YouTube API Initialization
+        // YouTube API Setup
         let ytPlayerInstance;
         let isYtReady = false;
 
@@ -167,19 +233,19 @@
         window.onYouTubeIframeAPIReady = function() {
             ytPlayerInstance = new YT.Player('ytPlayer', {
                 playerVars: {
-                    'controls': 0,        // No UI controls
-                    'disablekb': 1,       // No keyboard shortcuts
-                    'modestbranding': 1,  // Minimal branding
-                    'rel': 0,             // No related videos at end
+                    'controls': 0,
+                    'disablekb': 1,
+                    'modestbranding': 1,
+                    'rel': 0,
                     'showinfo': 0,
                     'playsinline': 1,
                     'autoplay': 0,
-                    'iv_load_policy': 3   // No annotations
+                    'iv_load_policy': 3
                 },
                 events: {
                     'onReady': () => { isYtReady = true; },
                     'onStateChange': (event) => {
-                        // Detect when Video 1.2 ends
+                        // When Video 1.2 (YT) finishes, trigger the epilogue dialogue
                         if (event.data === YT.PlayerState.ENDED) {
                             startEpilogue();
                         }
@@ -188,7 +254,7 @@
             });
         };
 
-        // English Story Dialogues (Phase 1)
+        // English Story Dialogues (Phase 1 - Prologue)
         const storyDialogues = [
             { speaker: "Narrator", text: "Evil shadow ninjas have emerged from the darkness..." },
             { speaker: "Villager", text: "They are terrorizing the innocent and burning everything in their path!" },
@@ -202,11 +268,13 @@
         ];
 
         let currentStoryIndex = 0;
-        let isEpiloguePhase = false; // Tracks if we are in post-video dialogue
-        let currentVideoPhase = ''; // tracks which video is playing
+        let isEpiloguePhase = false;
+        let currentVideoPhase = '';
+        let transitionTimer = null;
 
         // DOM Elements
         const storyScreen = document.getElementById('storyScreen');
+        const transitionScreen = document.getElementById('transitionScreen');
         const dialogSpeaker = document.getElementById('dialogSpeaker');
         const dialogText = document.getElementById('dialogText');
         const videoScreen = document.getElementById('videoScreen');
@@ -214,18 +282,15 @@
         const playPrompt = document.getElementById('playPrompt');
         const powerChoiceScreen = document.getElementById('powerChoiceScreen');
 
-        // Function to start the epilogue after video 1.2
+        // Start epilogue after video 1.2 completes
         function startEpilogue() {
-            // Hide all video elements
             videoScreen.classList.add('hidden');
             document.getElementById('ytPlayerContainer').classList.add('hidden');
             
-            // Switch to Epilogue Phase
             isEpiloguePhase = true;
             currentStoryIndex = 0;
             updateDialogue();
             
-            // Reveal Story Background Screen again
             storyScreen.classList.remove('hidden');
             setTimeout(() => {
                 storyScreen.classList.remove('opacity-0');
@@ -239,7 +304,7 @@
             dialogText.innerText = dialogue.text;
         }
 
-        // Tap anywhere on the story screen to advance
+        // Tap story screen to advance dialogue
         storyScreen.addEventListener('click', () => {
             const dialogues = isEpiloguePhase ? epilogueDialogues : storyDialogues;
             currentStoryIndex++;
@@ -248,64 +313,80 @@
                 updateDialogue();
             } else {
                 if (!isEpiloguePhase) {
-                    // End of prologue story, start Video 1.0
                     storyScreen.classList.add('opacity-0');
                     setTimeout(() => {
                         storyScreen.classList.add('hidden');
                         playVideo('1.0');
                     }, 700);
                 } else {
-                    // End of epilogue
                     dialogSpeaker.innerText = "System";
                     dialogText.innerText = "To Be Continued...";
-                    document.querySelector('.animate-pulse-soft').classList.add('hidden'); // Hide the tap prompt
+                    const pulsePrompt = storyScreen.querySelector('.animate-pulse-soft');
+                    if (pulsePrompt) pulsePrompt.classList.add('hidden');
                 }
             }
         });
 
-        // Initialize first dialog
+        // Initialize prologue text
         updateDialogue();
 
         function playVideo(phase) {
             videoScreen.classList.remove('hidden');
             currentVideoPhase = phase;
             
-            // Ensure HTML5 video is visible, hide YT player
             mainVideo.classList.remove('hidden');
             document.getElementById('ytPlayerContainer').classList.add('hidden');
 
-            // Assign corresponding video source
             if (phase === '1.0') {
                 mainVideo.src = video1_0;
             } else if (phase === '1.1') {
                 mainVideo.src = video1_1;
             }
 
-            // Attempt Autoplay
             const playPromise = mainVideo.play();
-            
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    // Autoplay prevented by browser, show prompt
+                playPromise.catch(() => {
                     playPrompt.classList.remove('hidden');
                 });
             }
         }
 
-        // Handle manual play if autoplay is blocked
         playPrompt.addEventListener('click', () => {
             playPrompt.classList.add('hidden');
             mainVideo.play();
         });
 
-        // Listen for video completion seamlessly
+        // Trigger cinematic narrator screen between 1.0 and 1.1
+        function showNarratorTransition() {
+            transitionScreen.classList.remove('hidden');
+            transitionScreen.classList.remove('opacity-0');
+
+            // Auto advance after 2.5 seconds or on tap
+            transitionTimer = setTimeout(() => {
+                hideNarratorTransition();
+            }, 2500);
+        }
+
+        function hideNarratorTransition() {
+            if (transitionTimer) clearTimeout(transitionTimer);
+            transitionScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                transitionScreen.classList.add('hidden');
+                playVideo('1.1');
+            }, 500);
+        }
+
+        transitionScreen.addEventListener('click', hideNarratorTransition);
+
+        // Listen for video completion
         mainVideo.addEventListener('ended', () => {
             if (currentVideoPhase === '1.0') {
-                playVideo('1.1');
+                // Show transition overlay: "And then... I arrived."
+                showNarratorTransition();
             } else if (currentVideoPhase === '1.1') {
-                // Keep the 1.1 video frozen in background, show slider overlay
+                // Video 1.1 finished -> display transparent slider overlay
                 powerChoiceScreen.classList.remove('hidden');
-                powerChoiceScreen.classList.add('flex'); // Ensure flex is active for alignment
+                powerChoiceScreen.classList.add('flex');
                 resetSlider();
             }
         });
@@ -313,17 +394,23 @@
         const sliderContainer = powerChoiceScreen.querySelector('.max-w-md');
         const sliderThumb = document.getElementById('slider-thumb');
         const thumbVisual = document.getElementById('thumb-visual');
+        const iconNeutral = document.getElementById('icon-neutral');
+        const iconFire = document.getElementById('icon-fire');
+        const iconElectric = document.getElementById('icon-electric');
         
         let isDragging = false;
         let startX = 0;
-        let currentX = 0;
+        let currentX = 50;
         let containerWidth = 0;
 
         function resetSlider() {
             sliderThumb.style.left = '50%';
-            thumbVisual.style.backgroundColor = '#d1d5db'; // gray-300
-            thumbVisual.style.boxShadow = 'none';
-            thumbVisual.style.borderColor = '#ffffff';
+            thumbVisual.className = "w-10 h-10 bg-gray-200 border-2 border-white transform rotate-45 transition-all duration-150 shadow-2xl flex items-center justify-center";
+            
+            iconNeutral.classList.remove('hidden');
+            iconFire.classList.add('hidden');
+            iconElectric.classList.add('hidden');
+            currentX = 50;
         }
 
         function handleDragStart(e) {
@@ -338,25 +425,30 @@
             const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             const deltaX = clientX - startX;
             
-            // Calculate percentage position (0 to 100)
             let percent = 50 + ((deltaX / containerWidth) * 100);
             percent = Math.max(10, Math.min(90, percent)); // Clamp between 10% and 90%
             
             sliderThumb.style.left = `${percent}%`;
 
-            // Dynamic color & intense glow effects based on drag direction
+            // Apply vibrant Fire or Electric styling based on drag percentage
             if (percent < 35) {
-                thumbVisual.style.backgroundColor = '#ef4444'; // Red for Fire
-                thumbVisual.style.boxShadow = '0 0 50px 15px #ef4444'; // Intense flame glow
-                thumbVisual.style.borderColor = '#fca5a5';
+                // FIRE EFFECT
+                thumbVisual.className = "w-10 h-10 transform rotate-45 transition-all duration-150 flex items-center justify-center effect-fire border-2";
+                iconNeutral.classList.add('hidden');
+                iconFire.classList.remove('hidden');
+                iconElectric.classList.add('hidden');
             } else if (percent > 65) {
-                thumbVisual.style.backgroundColor = '#06b6d4'; // Cyan for Electric
-                thumbVisual.style.boxShadow = '0 0 50px 15px #06b6d4'; // Intense electric glow
-                thumbVisual.style.borderColor = '#67e8f9';
+                // ELECTRIC EFFECT
+                thumbVisual.className = "w-10 h-10 transform rotate-45 transition-all duration-150 flex items-center justify-center effect-electric border-2";
+                iconNeutral.classList.add('hidden');
+                iconFire.classList.add('hidden');
+                iconElectric.classList.remove('hidden');
             } else {
-                thumbVisual.style.backgroundColor = '#d1d5db';
-                thumbVisual.style.boxShadow = 'none';
-                thumbVisual.style.borderColor = '#ffffff';
+                // NEUTRAL STATE
+                thumbVisual.className = "w-10 h-10 bg-gray-200 border-2 border-white transform rotate-45 transition-all duration-150 shadow-2xl flex items-center justify-center";
+                iconNeutral.classList.remove('hidden');
+                iconFire.classList.add('hidden');
+                iconElectric.classList.add('hidden');
             }
             
             currentX = percent;
@@ -367,45 +459,39 @@
             isDragging = false;
             sliderThumb.classList.add('snapping');
             
-            // Check selection threshold
             if (currentX <= 20) {
                 selectPower('fire');
             } else if (currentX >= 80) {
                 selectPower('electric');
             } else {
-                // Snap back to center
                 resetSlider();
             }
         }
 
         function selectPower(type) {
-            // Hide slider UI
             powerChoiceScreen.classList.add('hidden');
             powerChoiceScreen.classList.remove('flex');
             
-            // Switch from HTML5 video layer to YouTube layer
             mainVideo.classList.add('hidden');
             document.getElementById('ytPlayerContainer').classList.remove('hidden');
 
             const targetVideoId = type === 'fire' ? ytFireId : ytElectricId;
 
-            // Play via YouTube API
             if (isYtReady && ytPlayerInstance) {
                 ytPlayerInstance.loadVideoById(targetVideoId);
                 ytPlayerInstance.playVideo();
             } else {
-                // Fallback loop if YouTube API loaded slowly
                 const retryPlay = setInterval(() => {
                     if (isYtReady && ytPlayerInstance) {
                         ytPlayerInstance.loadVideoById(targetVideoId);
                         ytPlayerInstance.playVideo();
                         clearInterval(retryPlay);
                     }
-                }, 500);
+                }, 400);
             }
         }
 
-        // Attach Slider Events (Touch & Mouse)
+        // Event Listeners for Dragging
         sliderThumb.addEventListener('mousedown', handleDragStart);
         document.addEventListener('mousemove', handleDragMove);
         document.addEventListener('mouseup', handleDragEnd);
