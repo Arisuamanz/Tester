@@ -1,465 +1,365 @@
 
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Game Tembak Susu - Redesign</title>
+    <title>Shadow Ninja Strike</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
         body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            touch-action: none; /* Halang scroll ketika bermain */
+            touch-action: none; /* Prevent browser refreshing on swipe */
+            user-select: none;
         }
 
-        /* --- VIDEO BACKGROUND --- */
-        .video-container {
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Seamless Fullscreen Video Layer with Top Crop */
+        .video-layer {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100vw;
-            height: 100vh;
-            z-index: 1; 
-            pointer-events: none; 
+            height: 110vh; /* Zooms 10% outwards pushing past the top boundary */
             overflow: hidden;
-        }
-
-        .video-container iframe {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: max(100vw, 177.78vh); 
-            height: max(100vh, 56.25vw);
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        /* --- OVERLAY SANGAT NIPIS (Hanya untuk timbulkan susu putih) --- */
-        .overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.15); /* 15% gelap sahaja */
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        /* --- KANVAS GAME BORDERLESS --- */
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
             z-index: 10;
-            display: block; /* Buang jarak bawah default */
+            background-color: #000;
         }
 
-        /* --- UI TANPA BINGKAI (TEXT ONLY) --- */
-        .ui-layer {
+        .video-layer video, #ytPlayerContainer iframe {
             position: absolute;
-            inset: 0;
-            z-index: 20;
-            pointer-events: none; /* Biar klik tembus ke canvas */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill; /* Maintains left/right/bottom tight fill */
+            border: none;
+            outline: none;
+            pointer-events: none; /* Prevents user interacting with YouTube/Video UI */
         }
 
-        /* Teks dengan bayang-bayang supaya nampak jelas tanpa kotak */
-        .text-shadow-glow {
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3);
+        /* Clean transparent dialog */
+        .transparent-dialog {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
-        
-        .pointer-events-auto {
-            pointer-events: auto;
+
+        /* Subtle pulsing text for tap indicator */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s infinite ease-in-out;
+        }
+
+        /* Slider Thumb styling */
+        #slider-thumb {
+            transition: transform 0.1s;
+        }
+        #slider-thumb.snapping {
+            transition: left 0.3s ease-out, transform 0.3s ease-out;
         }
     </style>
 </head>
-<body class="text-white select-none font-sans">
+<body class="relative w-screen h-screen">
 
-    <!-- 1. VIDEO YOUTUBE LATAR -->
-    <div class="video-container">
-        <div id="youtube-player"></div>
-    </div>
-    <div class="overlay"></div>
-
-    <!-- 2. KANVAS SKRIN PENUH -->
-    <canvas id="gameCanvas"></canvas>
-
-    <!-- 3. UI TANPA KOTAK (Bebas halangan visual) -->
-    <div class="ui-layer">
+    <!-- PHASE 1: STORY DIALOGUE SCREEN -->
+    <!-- The entire screen is clickable to advance the story -->
+    <div id="storyScreen" class="absolute inset-0 z-30 flex flex-col justify-end bg-cover bg-center bg-no-repeat cursor-pointer transition-opacity duration-700" 
+         style="background-image: url('https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg');">
         
-        <!-- Skor (Kiri Atas) -->
-        <div id="score-ui" class="absolute top-6 left-6 hidden text-left">
-            <p class="text-[12px] font-bold tracking-widest uppercase text-white/80 text-shadow-glow">Skor Cecair</p>
-            <p id="score-display" class="text-5xl font-black text-white text-shadow-glow mt-[-5px]">0</p>
-        </div>
+        <!-- Subtle gradient for text readability -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none"></div>
 
-        <!-- Menu Mula -->
-        <div id="menu-start" class="flex flex-col items-center pointer-events-auto text-center mt-[-10vh]">
-            <h1 class="text-5xl md:text-7xl font-black mb-2 text-white text-shadow-glow uppercase tracking-tighter">Splash<br><span class="text-blue-300">Susu</span></h1>
-            <p class="text-lg text-white/90 mb-10 text-shadow-glow font-medium">Tap skrin untuk tembak susu ke biskut!</p>
-            
-            <button onclick="startGame()" class="px-10 py-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xl font-black rounded-full transition-all active:scale-90 border border-white/40 shadow-[0_0_30px_rgba(255,255,255,0.3)] cursor-pointer uppercase tracking-widest">
-                Main Sekarang
-            </button>
-            <p id="loading-msg" class="text-sm text-yellow-300 mt-4 hidden text-shadow-glow">Menyambung Video...</p>
-        </div>
-
-        <!-- Menu Game Over -->
-        <div id="menu-gameover" class="hidden flex-col items-center pointer-events-auto text-center">
-            <h2 class="text-5xl md:text-6xl font-black text-red-500 text-shadow-glow uppercase mb-2">Tumpah!</h2>
-            <p class="text-xl text-white/90 text-shadow-glow">Skor Anda:</p>
-            <p id="final-score" class="text-7xl font-black text-white text-shadow-glow mb-10">0</p>
-            
-            <button onclick="restartGame()" class="px-10 py-4 bg-red-500/80 hover:bg-red-500 backdrop-blur-sm text-white text-xl font-black rounded-full transition-all active:scale-90 shadow-[0_0_30px_rgba(239,68,68,0.5)] cursor-pointer uppercase tracking-widest">
-                Cuba Lagi
-            </button>
+        <!-- Transparent Dialog Box (No Borders) -->
+        <div class="relative z-10 w-full px-6 pb-12 pt-6 transparent-dialog">
+            <div class="max-w-3xl mx-auto text-center">
+                <h3 id="dialogSpeaker" class="font-title font-bold text-red-400 text-lg tracking-widest uppercase mb-2">Narrator</h3>
+                <p id="dialogText" class="text-white text-xl md:text-2xl leading-relaxed min-h-[90px] drop-shadow-md">
+                    <!-- Text injected via JS -->
+                </p>
+                
+                <!-- Tap Indicator -->
+                <p class="text-xs text-gray-400 tracking-widest uppercase mt-6 animate-pulse-soft">
+                    Tap anywhere to continue
+                </p>
+            </div>
         </div>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- PHASE 2: FULLSCREEN VIDEO PLAYER (HTML5 & YT) -->
+    <div id="videoScreen" class="absolute inset-0 z-20 hidden bg-black">
+        <div class="video-layer">
+            <!-- HTML5 Video for 1.0 and 1.1 -->
+            <video id="mainVideo" playsinline preload="auto"></video>
+            
+            <!-- YouTube Player Container for 1.2 -->
+            <div id="ytPlayerContainer" class="hidden w-full h-full absolute inset-0">
+                <div id="ytPlayer"></div>
+            </div>
+        </div>
+        
+        <!-- Hidden skip instruction, shown only if autoplay is blocked -->
+        <div id="playPrompt" class="absolute inset-0 z-30 hidden flex items-center justify-center bg-black/80 cursor-pointer">
+            <p class="text-white font-title text-xl tracking-widest animate-pulse-soft">Tap to Start Video</p>
+        </div>
+    </div>
+
+    <!-- PHASE 3: ELEMENTAL POWER SLIDER OVERLAY -->
+    <div id="powerChoiceScreen" class="absolute inset-x-0 z-40 hidden flex-col items-center pointer-events-none" style="bottom: 20%;">
+        
+        <!-- Interactive Drag Slider -->
+        <div class="relative w-full max-w-md h-20 bg-white/10 backdrop-blur-md rounded-full shadow-lg overflow-hidden flex items-center border border-white/20 pointer-events-auto">
+            
+            <!-- Target Labels -->
+            <div class="absolute left-6 text-red-500 font-title font-bold tracking-widest opacity-80 drop-shadow-md">FIRE</div>
+            <div class="absolute right-6 text-cyan-500 font-title font-bold tracking-widest opacity-80 drop-shadow-md">ELECTRIC</div>
+            
+            <!-- Draggable Thumb -->
+            <div id="slider-thumb" class="absolute w-20 h-20 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.5)] flex items-center justify-center cursor-grab snapping" style="left: 50%; transform: translateX(-50%);">
+                <div class="w-12 h-12 rounded-full bg-black/10"></div>
+            </div>
+            
+        </div>
+    </div>
 
     <script>
-        // ==========================================
-        // 1. PENGURUSAN VIDEO YOUTUBE
-        // ==========================================
-        let ytPlayer;
-        let isVideoReady = false;
-        const videoId = 'wMONY5W8sZQ'; 
+        // Media Configuration
+        const bgImage = 'https://res.cloudinary.com/dsqi4tm8x/image/upload/v1790269644/2fea2de11dc79970adf05c7a86a1ab97_armfj4.jpg';
+        
+        // Extracted raw .mp4 URLs for perfect fullscreen, borderless playback
+        const video1_0 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.0_edoutw.mp4';
+        const video1_1 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.1_b4lyr8.mp4';
 
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('youtube-player', {
-                videoId: videoId,
+        // YouTube Video IDs for 1.2
+        const ytFireId = 'F4FEpI-0tzI';
+        const ytElectricId = 'VXtbzPW48G0';
+
+        // YouTube API Initialization
+        let ytPlayerInstance;
+        let isYtReady = false;
+
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = function() {
+            ytPlayerInstance = new YT.Player('ytPlayer', {
                 playerVars: {
-                    'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'rel': 0, 
-                    'showinfo': 0, 'modestbranding': 1, 'playsinline': 1, 'loop': 1,
-                    'playlist': videoId, 'vq': 'hd1080'
+                    'controls': 0,        // No UI controls
+                    'disablekb': 1,       // No keyboard shortcuts
+                    'modestbranding': 1,  // Minimal branding
+                    'rel': 0,             // No related videos at end
+                    'showinfo': 0,
+                    'playsinline': 1,
+                    'autoplay': 0,
+                    'iv_load_policy': 3   // No annotations
                 },
                 events: {
-                    'onReady': () => { isVideoReady = true; },
-                    'onStateChange': (e) => { if (e.data === YT.PlayerState.ENDED) ytPlayer.playVideo(); }
+                    'onReady': () => { isYtReady = true; }
                 }
             });
-        }
-
-        // ==========================================
-        // 2. ENJIN KANVAS & KESAN VISUAL (FLUID/CECAIR)
-        // ==========================================
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let gameLoopId;
-        
-        let score = 0;
-        let gameActive = false;
-        let frameCount = 0;
-
-        // Jadikan canvas sepenuh skrin
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // --- ENTIITI PERMAINAN ---
-        
-        // Pemain (Muncung Tembakan di bawah)
-        let player = {
-            x: canvas.width / 2,
-            y: canvas.height - 40,
-            targetX: canvas.width / 2,
-            radius: 20
         };
 
-        let milkDrops = [];
-        let cookies = [];
-        let splashes = []; // Kesan susu pecah (Cecair)
+        // English Story Dialogues
+        const storyDialogues = [
+            { speaker: "Narrator", text: "Evil shadow ninjas have emerged from the darkness..." },
+            { speaker: "Villager", text: "They are terrorizing the innocent and burning everything in their path!" },
+            { speaker: "Hero", text: "I must awaken the ancient elemental powers to stop this madness." }
+        ];
 
-        // --- FUNGSI LUKISAN ---
-        
-        function drawPlayer() {
-            // Pergerakan lancar (Smooth lerp) mengikut jari/mouse
-            player.x += (player.targetX - player.x) * 0.2;
+        let currentStoryIndex = 0;
+        let currentVideoPhase = ''; // tracks which video is playing
 
-            // Lukis pemain sebagai muncung/meriam bulat biru cair/putih
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#93c5fd'; // Biru lembut
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fill();
+        // DOM Elements
+        const storyScreen = document.getElementById('storyScreen');
+        const dialogSpeaker = document.getElementById('dialogSpeaker');
+        const dialogText = document.getElementById('dialogText');
+        const videoScreen = document.getElementById('videoScreen');
+        const mainVideo = document.getElementById('mainVideo');
+        const playPrompt = document.getElementById('playPrompt');
+        const powerChoiceScreen = document.getElementById('powerChoiceScreen');
+
+        function updateDialogue() {
+            const dialogue = storyDialogues[currentStoryIndex];
+            dialogSpeaker.innerText = dialogue.speaker;
+            dialogText.innerText = dialogue.text;
+        }
+
+        // Tap anywhere on the story screen to advance
+        storyScreen.addEventListener('click', () => {
+            currentStoryIndex++;
+            if (currentStoryIndex < storyDialogues.length) {
+                updateDialogue();
+            } else {
+                // End of story, start Video 1.0
+                storyScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    storyScreen.classList.add('hidden');
+                    playVideo('1.0');
+                }, 700);
+            }
+        });
+
+        // Initialize first dialog
+        updateDialogue();
+
+        function playVideo(phase) {
+            videoScreen.classList.remove('hidden');
+            currentVideoPhase = phase;
             
-            // Detail muncung
-            ctx.fillStyle = '#60a5fa';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y - 10, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
+            // Ensure HTML5 video is visible, hide YT player
+            mainVideo.classList.remove('hidden');
+            document.getElementById('ytPlayerContainer').classList.add('hidden');
 
-        function drawMilkDrops() {
-            // Peluru berbentuk titisan susu memanjang
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            // Assign corresponding video source
+            if (phase === '1.0') {
+                mainVideo.src = video1_0;
+            } else if (phase === '1.1') {
+                mainVideo.src = video1_1;
+            }
+
+            // Attempt Autoplay
+            const playPromise = mainVideo.play();
             
-            milkDrops.forEach(drop => {
-                ctx.beginPath();
-                // Bentuk bujur (titisan cecair)
-                ctx.ellipse(drop.x, drop.y, drop.width, drop.height, 0, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.shadowBlur = 0;
-        }
-
-        function drawCookies() {
-            cookies.forEach(cookie => {
-                // Biskut asas
-                ctx.fillStyle = '#8B4513'; // Warna Coklat
-                ctx.beginPath();
-                ctx.arc(cookie.x, cookie.y, cookie.radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Cip Coklat (Kesan tekstur)
-                ctx.fillStyle = '#3E2723'; // Coklat gelap
-                ctx.beginPath();
-                ctx.arc(cookie.x - cookie.radius*0.3, cookie.y - cookie.radius*0.2, cookie.radius*0.2, 0, Math.PI * 2);
-                ctx.arc(cookie.x + cookie.radius*0.4, cookie.y + cookie.radius*0.1, cookie.radius*0.15, 0, Math.PI * 2);
-                ctx.arc(cookie.x - cookie.radius*0.1, cookie.y + cookie.radius*0.4, cookie.radius*0.25, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function drawSplashes() {
-            // Visual cecair pecah yang terkesan dengan graviti
-            splashes.forEach(s => {
-                ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            ctx.shadowBlur = 0;
-        }
-
-        // --- MEKANIK TEMBAKAN & KESAN CECAIR ---
-        
-        function shootMilk() {
-            milkDrops.push({
-                x: player.x,
-                y: player.y - 20,
-                width: 6,
-                height: 18, // Bentuk memanjang macam pancutan
-                speed: 15
-            });
-        }
-
-        function createMilkSplash(x, y, amount) {
-            for(let i=0; i<amount; i++) {
-                splashes.push({
-                    x: x, 
-                    y: y,
-                    vx: (Math.random() - 0.5) * 10, // Pecahan rawak kiri/kanan
-                    vy: (Math.random() - 1) * 8,    // Pecahan ke atas sikit
-                    radius: Math.random() * 6 + 2,  // Saiz cecair berbeza
-                    alpha: 1,
-                    gravity: 0.4                    // Efek cecair jatuh
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Autoplay prevented by browser, show prompt
+                    playPrompt.classList.remove('hidden');
                 });
             }
         }
 
-        function spawnCookie() {
-            let r = Math.random() * 20 + 20; // Jejari biskut (20 - 40)
-            cookies.push({
-                x: Math.random() * (canvas.width - r * 2) + r,
-                y: -r,
-                radius: r,
-                speed: Math.random() * 2.5 + 2 // Kelajuan jatuh
-            });
-        }
-
-        // --- KITARAN UTAMA (GAME LOOP) ---
-        
-        function update() {
-            if (!gameActive) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Bersihkan tanpa latar!
-            frameCount++;
-
-            // 1. UPDATE PEMAIN
-            drawPlayer();
-
-            // 2. UPDATE PELURU SUSU
-            for (let i = 0; i < milkDrops.length; i++) {
-                let drop = milkDrops[i];
-                drop.y -= drop.speed;
-                // Susu jadi makin panjang bila laju
-                drop.height = Math.min(drop.height + 0.5, 30); 
-                
-                if (drop.y < -50) {
-                    milkDrops.splice(i, 1);
-                    i--;
-                }
-            }
-            drawMilkDrops();
-
-            // 3. MUNCUL BISKUT (Musuh)
-            // Makin lama main, makin cepat biskut keluar
-            let spawnRate = Math.max(20, 60 - Math.floor(score / 50)); 
-            if (frameCount % spawnRate === 0) spawnCookie();
-
-            // 4. UPDATE BISKUT & COLLISION (Bulat bertemu bulat)
-            for (let i = 0; i < cookies.length; i++) {
-                let c = cookies[i];
-                c.y += c.speed;
-
-                // Cek Pelanggaran Biskut dengan Pemain (GAME OVER)
-                let distToPlayer = Math.hypot(player.x - c.x, player.y - c.y);
-                if (distToPlayer < player.radius + c.radius - 5) {
-                    gameOver();
-                    return;
-                }
-
-                // Cek Pelanggaran Susu dengan Biskut
-                let hit = false;
-                for (let j = 0; j < milkDrops.length; j++) {
-                    let drop = milkDrops[j];
-                    let distToDrop = Math.hypot(drop.x - c.x, drop.y - c.y);
-                    
-                    if (distToDrop < c.radius + drop.height/2) {
-                        // KENA!
-                        createMilkSplash(c.x, c.y, 15); // Hasilkan letupan cecair
-                        score += 10;
-                        document.getElementById('score-display').innerText = score;
-                        
-                        milkDrops.splice(j, 1); // Buang peluru susu
-                        hit = true;
-                        break;
-                    }
-                }
-
-                // Buang biskut jika kena tembak atau terkeluar skrin
-                if (hit || c.y > canvas.height + c.radius) {
-                    cookies.splice(i, 1);
-                    i--;
-                }
-            }
-            drawCookies();
-
-            // 5. UPDATE SPLASH (CECAIR PECAH)
-            for (let i = 0; i < splashes.length; i++) {
-                let s = splashes[i];
-                s.vy += s.gravity; // Tarikan graviti (jatuh)
-                s.x += s.vx;
-                s.y += s.vy;
-                s.radius *= 0.95; // Makin mengecil (menyejat)
-                s.alpha -= 0.03;  // Makin pudar
-                
-                if (s.alpha <= 0.1 || s.radius <= 0.5) {
-                    splashes.splice(i, 1);
-                    i--;
-                }
-            }
-            drawSplashes();
-
-            gameLoopId = requestAnimationFrame(update);
-        }
-
-        // ==========================================
-        // 3. KAWALAN SENTUHAN (TAP / MOUSE)
-        // ==========================================
-        
-        function handleInput(e) {
-            if (!gameActive) return;
-            e.preventDefault(); // Halang scroll/zoom di mobile
-            
-            // Dapatkan koordinat X (Touch atau Mouse)
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            
-            // Gerakkan pemain ke koordinat jari/mouse
-            player.targetX = clientX;
-            
-            // Tembak susu setiap kali tap/klik!
-            shootMilk();
-        }
-
-        function handleMove(e) {
-            if (!gameActive) return;
-            e.preventDefault();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            player.targetX = clientX; // Pemain ikut jari tanpa menembak
-        }
-
-        // Daftar event listener untuk Canvas (Bebas Kawalan)
-        canvas.addEventListener('touchstart', handleInput, {passive: false});
-        canvas.addEventListener('touchmove', handleMove, {passive: false});
-        
-        canvas.addEventListener('mousedown', handleInput);
-        canvas.addEventListener('mousemove', (e) => {
-            if(e.buttons > 0) handleMove(e); // Hanya ikut kalau sedang klik hold (drag)
+        // Handle manual play if autoplay is blocked
+        playPrompt.addEventListener('click', () => {
+            playPrompt.classList.add('hidden');
+            mainVideo.play();
         });
 
-        // ==========================================
-        // 4. KAWALAN MENU
-        // ==========================================
-        function startGame() {
-            if (!isVideoReady) {
-                document.getElementById('loading-msg').classList.remove('hidden');
-                setTimeout(startGame, 500);
-                return;
+        // Listen for video completion seamlessly
+        mainVideo.addEventListener('ended', () => {
+            if (currentVideoPhase === '1.0') {
+                playVideo('1.1');
+            } else if (currentVideoPhase === '1.1') {
+                // Keep the 1.1 video frozen in background, show slider overlay
+                powerChoiceScreen.classList.remove('hidden');
+                powerChoiceScreen.classList.add('flex'); // Ensure flex is active for alignment
+                resetSlider();
             }
+        });
 
-            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                ytPlayer.unMute(); 
-                ytPlayer.playVideo();
+        const sliderContainer = powerChoiceScreen.querySelector('.max-w-md');
+        const sliderThumb = document.getElementById('slider-thumb');
+        
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let containerWidth = 0;
+
+        function resetSlider() {
+            sliderThumb.style.left = '50%';
+            sliderThumb.style.backgroundColor = '#ffffff';
+            sliderThumb.style.boxShadow = '0 0 20px rgba(255,255,255,0.5)';
+        }
+
+        function handleDragStart(e) {
+            isDragging = true;
+            sliderThumb.classList.remove('snapping');
+            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            containerWidth = sliderContainer.offsetWidth;
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const deltaX = clientX - startX;
+            
+            // Calculate percentage position (0 to 100)
+            let percent = 50 + ((deltaX / containerWidth) * 100);
+            percent = Math.max(10, Math.min(90, percent)); // Clamp between 10% and 90%
+            
+            sliderThumb.style.left = `${percent}%`;
+
+            // Dynamic color feedback based on direction
+            if (percent < 40) {
+                sliderThumb.style.backgroundColor = '#ef4444'; // Red for Fire
+                sliderThumb.style.boxShadow = '0 0 30px rgba(239,68,68,0.8)';
+            } else if (percent > 60) {
+                sliderThumb.style.backgroundColor = '#06b6d4'; // Cyan for Electric
+                sliderThumb.style.boxShadow = '0 0 30px rgba(6,182,212,0.8)';
+            } else {
+                sliderThumb.style.backgroundColor = '#ffffff';
+                sliderThumb.style.boxShadow = '0 0 20px rgba(255,255,255,0.5)';
             }
-
-            // Sembunyikan Menu
-            document.getElementById('menu-start').classList.add('hidden');
-            document.getElementById('score-ui').classList.remove('hidden');
-
-            resetGame();
-            gameActive = true;
-            resizeCanvas(); // Pastikan saiz penuh sebelum mula
-            update();
-        }
-
-        function gameOver() {
-            gameActive = false;
-            cancelAnimationFrame(gameLoopId);
             
-            document.getElementById('score-ui').classList.add('hidden');
+            currentX = percent;
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            sliderThumb.classList.add('snapping');
             
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('menu-gameover').classList.remove('hidden');
-            document.getElementById('menu-gameover').classList.add('flex');
+            // Check selection threshold
+            if (currentX <= 20) {
+                selectPower('fire');
+            } else if (currentX >= 80) {
+                selectPower('electric');
+            } else {
+                // Snap back to center
+                resetSlider();
+            }
         }
 
-        function restartGame() {
-            document.getElementById('menu-gameover').classList.add('hidden');
-            document.getElementById('menu-gameover').classList.remove('flex');
-            document.getElementById('score-ui').classList.remove('hidden');
+        function selectPower(type) {
+            // Hide slider UI
+            powerChoiceScreen.classList.add('hidden');
+            powerChoiceScreen.classList.remove('flex');
+            
+            // Switch from HTML5 video layer to YouTube layer
+            mainVideo.classList.add('hidden');
+            document.getElementById('ytPlayerContainer').classList.remove('hidden');
 
-            resetGame();
-            gameActive = true;
-            update();
+            const targetVideoId = type === 'fire' ? ytFireId : ytElectricId;
+
+            // Play via YouTube API
+            if (isYtReady && ytPlayerInstance) {
+                ytPlayerInstance.loadVideoById(targetVideoId);
+                ytPlayerInstance.playVideo();
+            } else {
+                // Fallback loop if YouTube API loaded slowly
+                const retryPlay = setInterval(() => {
+                    if (isYtReady && ytPlayerInstance) {
+                        ytPlayerInstance.loadVideoById(targetVideoId);
+                        ytPlayerInstance.playVideo();
+                        clearInterval(retryPlay);
+                    }
+                }, 500);
+            }
         }
 
-        function resetGame() {
-            score = 0;
-            frameCount = 0;
-            milkDrops = [];
-            cookies = [];
-            splashes = [];
-            player.x = canvas.width / 2;
-            player.targetX = canvas.width / 2;
-            document.getElementById('score-display').innerText = score;
-        }
+        // Attach Slider Events (Touch & Mouse)
+        sliderThumb.addEventListener('mousedown', handleDragStart);
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+
+        sliderThumb.addEventListener('touchstart', handleDragStart, { passive: false });
+        document.addEventListener('touchmove', handleDragMove, { passive: false });
+        document.addEventListener('touchend', handleDragEnd);
+
     </script>
 </body>
 </html>
