@@ -36,7 +36,7 @@
             transform: translateY(-10%);
         }
 
-        .video-layer video, #ytPlayerContainer iframe {
+        .video-layer video, #ytPlayerContainer iframe, #cloudinaryPlayerContainer iframe {
             position: absolute;
             bottom: 0;
             left: 0;
@@ -152,15 +152,15 @@
         </div>
     </div>
 
-    <!-- PHASE 2: FULLSCREEN VIDEO PLAYER (HTML5 & YT) -->
+    <!-- PHASE 2: FULLSCREEN VIDEO PLAYER (HTML5 & Cloudinary) -->
     <div id="videoScreen" class="absolute inset-0 z-20 hidden bg-black">
         <div class="video-layer">
             <!-- HTML5 Video for 1.0 and 1.1 -->
             <video id="mainVideo" playsinline preload="auto"></video>
             
-            <!-- YouTube Player Container for 1.2 -->
-            <div id="ytPlayerContainer" class="hidden w-full h-full absolute inset-0">
-                <div id="ytPlayer"></div>
+            <!-- Cloudinary Player Container for 1.2 -->
+            <div id="cloudinaryPlayerContainer" class="hidden w-full h-full absolute inset-0">
+                <iframe id="cloudinaryPlayer" width="100%" height="100%" src="" allow="autoplay" allowfullscreen></iframe>
             </div>
         </div>
         
@@ -217,42 +217,21 @@
         const video1_0 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.0_edoutw.mp4';
         const video1_1 = 'https://res.cloudinary.com/dsqi4tm8x/video/upload/1.1_b4lyr8.mp4';
 
-        // YouTube Video IDs for 1.2
-        const ytFireId = 'F4FEpI-0tzI';
-        const ytElectricId = 'VXtbzPW48G0';
+        // Cloudinary Player Embed URLs for 1.2
+        const cloudinaryFireUrl = 'https://player.cloudinary.com/embed/?cloud_name=dsqi4tm8x&public_id=1_2Fire_trptnj';
+        const cloudinaryElectricUrl = 'https://player.cloudinary.com/embed/?cloud_name=dsqi4tm8x&public_id=1_2electric_on2sui';
 
-        // YouTube API Setup
-        let ytPlayerInstance;
-        let isYtReady = false;
-
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        window.onYouTubeIframeAPIReady = function() {
-            ytPlayerInstance = new YT.Player('ytPlayer', {
-                playerVars: {
-                    'controls': 0,
-                    'disablekb': 1,
-                    'modestbranding': 1,
-                    'rel': 0,
-                    'showinfo': 0,
-                    'playsinline': 1,
-                    'autoplay': 0,
-                    'iv_load_policy': 3
-                },
-                events: {
-                    'onReady': () => { isYtReady = true; },
-                    'onStateChange': (event) => {
-                        // When Video 1.2 (YT) finishes, trigger the epilogue dialogue
-                        if (event.data === YT.PlayerState.ENDED) {
-                            startEpilogue();
-                        }
-                    }
-                }
-            });
-        };
+        // DOM Elements
+        const storyScreen = document.getElementById('storyScreen');
+        const transitionScreen = document.getElementById('transitionScreen');
+        const dialogSpeaker = document.getElementById('dialogSpeaker');
+        const dialogText = document.getElementById('dialogText');
+        const videoScreen = document.getElementById('videoScreen');
+        const mainVideo = document.getElementById('mainVideo');
+        const playPrompt = document.getElementById('playPrompt');
+        const powerChoiceScreen = document.getElementById('powerChoiceScreen');
+        const cloudinaryPlayerContainer = document.getElementById('cloudinaryPlayerContainer');
+        const cloudinaryPlayer = document.getElementById('cloudinaryPlayer');
 
         // English Story Dialogues (Phase 1 - Prologue)
         const storyDialogues = [
@@ -272,20 +251,10 @@
         let currentVideoPhase = '';
         let transitionTimer = null;
 
-        // DOM Elements
-        const storyScreen = document.getElementById('storyScreen');
-        const transitionScreen = document.getElementById('transitionScreen');
-        const dialogSpeaker = document.getElementById('dialogSpeaker');
-        const dialogText = document.getElementById('dialogText');
-        const videoScreen = document.getElementById('videoScreen');
-        const mainVideo = document.getElementById('mainVideo');
-        const playPrompt = document.getElementById('playPrompt');
-        const powerChoiceScreen = document.getElementById('powerChoiceScreen');
-
         // Start epilogue after video 1.2 completes
         function startEpilogue() {
             videoScreen.classList.add('hidden');
-            document.getElementById('ytPlayerContainer').classList.add('hidden');
+            cloudinaryPlayerContainer.classList.add('hidden');
             
             isEpiloguePhase = true;
             currentStoryIndex = 0;
@@ -335,7 +304,7 @@
             currentVideoPhase = phase;
             
             mainVideo.classList.remove('hidden');
-            document.getElementById('ytPlayerContainer').classList.add('hidden');
+            cloudinaryPlayerContainer.classList.add('hidden');
 
             if (phase === '1.0') {
                 mainVideo.src = video1_0;
@@ -473,22 +442,10 @@
             powerChoiceScreen.classList.remove('flex');
             
             mainVideo.classList.add('hidden');
-            document.getElementById('ytPlayerContainer').classList.remove('hidden');
+            cloudinaryPlayerContainer.classList.remove('hidden');
 
-            const targetVideoId = type === 'fire' ? ytFireId : ytElectricId;
-
-            if (isYtReady && ytPlayerInstance) {
-                ytPlayerInstance.loadVideoById(targetVideoId);
-                ytPlayerInstance.playVideo();
-            } else {
-                const retryPlay = setInterval(() => {
-                    if (isYtReady && ytPlayerInstance) {
-                        ytPlayerInstance.loadVideoById(targetVideoId);
-                        ytPlayerInstance.playVideo();
-                        clearInterval(retryPlay);
-                    }
-                }, 400);
-            }
+            const targetUrl = type === 'fire' ? cloudinaryFireUrl : cloudinaryElectricUrl;
+            cloudinaryPlayer.src = targetUrl;
         }
 
         // Event Listeners for Dragging
